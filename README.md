@@ -1,6 +1,6 @@
 ### Olá, meu nome é Pierre.
 
-Curso Sistemas de Informação, hoje no V Semestre.
+Curso Sistemas de Informação, hoje no VI Semestre.
 
 
 <div style="display: inline_block"><br>
