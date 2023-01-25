@@ -1,5 +1,5 @@
 # Olá, meu nome é Pierre.
-Curso Sistemas de Informação, hoje no VI Semestre.
+Curso Sistemas de Informação, hoje no VII Semestre.
 <div style="display: inline_block"><br>
     <img align="center" alt="Cass-Js" height="30" width="40" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-plain.svg">
     <img align="center" alt="Csharp" height="30" width="40" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/csharp/csharp-original.svg">
