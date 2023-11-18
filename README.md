@@ -1,9 +1,13 @@
 # Olá, meu nome é Pierre.
-Curso Sistemas de Informação, hoje no VII Semestre.
+Curso Sistemas de Informação, hoje no VIII Semestre.
 <div style="display: inline_block"><br>
+    <img align="center" alt="Git"  width="40px" height="30" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" style="padding-right:10px;" />
+    <img align="center" alt="HTML5"  width="40px" height="30"src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" style="padding-right:10px;" />
+    <img align="center" alt="CSS3" width="40px" height="30" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" style="padding-right:10px;" />
     <img align="center" alt="Cass-Js" height="30" width="40" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-plain.svg">
+    <img align="center" alt="Bootsrap"  width="40px" height="30"src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Bootstrap.svg" style="padding-right:10px;" />
+    <img align="center" alt="Java" height="30" width="40" src= "https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/PHP-Dark.svg">
     <img align="center" alt="Csharp" height="30" width="40" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/csharp/csharp-original.svg">
-    <img align="center" alt="Java" height="30" width="40" src= "https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg">
 </div>
  
 # 
