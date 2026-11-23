@@ -13,7 +13,6 @@ const curriculo = {
     contatos: [
       { texto: "LinkedIn", url: "https://www.linkedin.com/in/pierre-alves/", icone: "linkedin" },
       { texto: "GitHub", url: "https://github.com/PierreSalves", icone: "github" },
-      { texto: "040797pierre@gmail.com", url: "mailto:040797pierre@gmail.com", icone: "email" },
       { texto: "tghservices.psa@gmail.com", url: "mailto:tghservices.psa@gmail.com", icone: "email" },
     ],
   },
@@ -86,7 +85,7 @@ const curriculo = {
   ],
   contato: {
     titulo: "Vamos conversar?",
-    texto: "Aberto a projetos, parcerias e oportunidades. Escreva para 040797pierre@gmail.com ou tghservices.psa@gmail.com, ou me chame no LinkedIn.",
+    texto: "Aberto a projetos, parcerias e oportunidades. Escreva para tghservices.psa@gmail.com ou me chame no LinkedIn.",
   },
   rodape: "© 2026 Pierre Alves · TGH Services",
 };
