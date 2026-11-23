@@ -28,8 +28,19 @@ export function CabecalhoSecao({ rotulo, titulo, children }) {
   );
 }
 
-// 1 cartão e meio no celular, 2 no tablet/notebook e 3 em telas largas.
-const larguraCartao = { flex: { xs: "0 0 86%", md: "0 0 calc((100% - 24px) / 2)", lg: "0 0 calc((100% - 48px) / 3)" }, minWidth: 0, scrollSnapAlign: "start" };
+// Quase 1 cartão inteiro no celular (com a pontinha do próximo), 2 no tablet/notebook e 3 em telas largas.
+const larguraCartao = { flex: { xs: "0 0 88%", md: "0 0 calc((100% - 24px) / 2)", lg: "0 0 calc((100% - 48px) / 3)" }, minWidth: 0, scrollSnapAlign: "start" };
+
+function Status({ app, sx }) {
+  return (
+    <Chip
+      size="small"
+      icon={<Icone nome={app.status.icone} />}
+      label={app.status.texto}
+      sx={{ bgcolor: "destaque.main", color: "destaque.contrastText", fontWeight: 500, flex: "none", "& .MuiChip-icon": { color: "inherit" }, ...sx }}
+    />
+  );
+}
 
 function CartaoApp({ app }) {
   const abrirPedido = useAbrirPedido();
@@ -37,21 +48,18 @@ function CartaoApp({ app }) {
   return (
     <Card component="article" sx={{ ...larguraCartao, bgcolor: "superficie.baixa", display: "flex", flexDirection: "column", boxShadow: 1 }}>
       <Telas telas={app.telas} nome={app.nome} iconeVazio={app.icone} textoVazio={app.semTelas} />
-      <Stack spacing={2} sx={{ p: 3, flex: 1 }}>
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+      <Stack spacing={2} useFlexGap sx={{ p: { xs: 2.5, sm: 3 }, flex: 1 }}>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: { xs: "flex-start", sm: "center" } }}>
           <Box sx={{ width: 48, height: 48, borderRadius: 3.5, bgcolor: "container.main", color: "container.contrastText", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
             <Icone nome={app.icone} />
           </Box>
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography variant="h3" sx={{ fontSize: 22 }}>{app.nome}</Typography>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>{app.publico}</Typography>
+            {/* No celular o status desce para baixo do nome, para o nome não quebrar palavra por palavra. */}
+            <Status app={app} sx={{ display: { xs: "inline-flex", sm: "none" }, mt: 1 }} />
           </Box>
-          <Chip
-            size="small"
-            icon={<Icone nome={app.status.icone} />}
-            label={app.status.texto}
-            sx={{ bgcolor: "destaque.main", color: "destaque.contrastText", fontWeight: 500, "& .MuiChip-icon": { color: "inherit" } }}
-          />
+          <Status app={app} sx={{ display: { xs: "none", sm: "inline-flex" } }} />
         </Stack>
         <Typography sx={{ color: "text.secondary", lineHeight: 1.55 }}>{app.resumo}</Typography>
         <Stack component="ul" spacing={1.5} sx={{ m: 0, p: 0, listStyle: "none" }}>
@@ -129,7 +137,8 @@ export function Vitrine() {
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              justifyContent: "flex-end",
+              // Centralizado: o cartão estica até a altura dos outros e o texto não some lá embaixo.
+              justifyContent: "center",
               gap: 1.5,
               p: 4,
               minHeight: 360,
