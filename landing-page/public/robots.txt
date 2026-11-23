@@ -4,7 +4,8 @@
 # Rotas deste Worker (src/index.js):
 #   /                     200, vitrine de apps e portfólio
 #   /curriculo            200, currículo
-#   /img/*, /app.js       200, arquivos da página inicial
+#   /assets/*, /img/*     200, arquivos da página inicial
+#   /api/pedido           formulário (só POST)
 #   qualquer outra rota   404 + noindex
 User-agent: *
 Allow: /
