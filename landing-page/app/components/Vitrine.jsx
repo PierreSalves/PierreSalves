@@ -15,6 +15,7 @@ import site from "../site.config.js";
 import { Icone } from "../icones.jsx";
 import { useAbrirPedido } from "./Pedido.jsx";
 import Telas from "./Telas.jsx";
+import { novaGuia } from "../links.js";
 
 export function CabecalhoSecao({ rotulo, titulo, children }) {
   return (
@@ -81,7 +82,7 @@ function CartaoApp({ app }) {
         <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 1, justifyContent: "flex-end" }}>
           <Button onClick={() => abrirPedido(pedidoParecido.tipo, app.nome)}>{pedidoParecido.texto}</Button>
           {app.links.map((l) => (
-            <Button key={l.url} href={l.url} variant={l.discreto ? "outlined" : "contained"} startIcon={l.icone ? <Icone nome={l.icone} /> : null}>
+            <Button key={l.url} href={l.url} {...novaGuia(l.url)} variant={l.discreto ? "outlined" : "contained"} startIcon={l.icone ? <Icone nome={l.icone} /> : null}>
               {l.texto}
             </Button>
           ))}
