@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Worker que serve tghservices.com.br e www.tghservices.com.br (modo manutenção + /curriculo).
+  "name": "tghservices-manutencao",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // O Worker decide o status de cada rota (503 na manutenção, 200 no currículo),
+    // então ele roda antes dos arquivos estáticos.
+    "run_worker_first": true
+  },
+  "routes": [
+    { "pattern": "tghservices.com.br", "custom_domain": true },
+    { "pattern": "www.tghservices.com.br", "custom_domain": true }
+  ],
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": { "enabled": true, "invocation_logs": true }
+  }
+}
