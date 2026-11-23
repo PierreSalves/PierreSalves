@@ -109,10 +109,10 @@ const site = {
       },
       {
         nome: "Lembretes de Aniversários",
-        publico: "Para não esquecer datas importantes",
+        publico: "App mobile · para não esquecer datas importantes",
         icone: "bolo",
         status: { texto: "Código aberto", icone: "codigo" },
-        resumo: "Organiza aniversários e outras datas e ajuda a mandar a mensagem certa no dia.",
+        resumo: "App mobile que organiza aniversários e outras datas e ajuda a mandar a mensagem certa no dia.",
         telas: [],
         semTelas: "Capturas em breve",
         recursos: [
