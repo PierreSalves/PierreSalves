@@ -2,9 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import "@fontsource/roboto/latin-400.css";
-import "@fontsource/roboto/latin-500.css";
-import "@fontsource/roboto/latin-700.css";
+// Roboto Flex com eixo de tamanho óptico (opsz), como no wireframe.
+import "@fontsource-variable/roboto-flex/opsz.css";
 import site from "./site.config.js";
 import { criarTema } from "./tema.js";
 import { PedidoProvider } from "./components/Pedido.jsx";

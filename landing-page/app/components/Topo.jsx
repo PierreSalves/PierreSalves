@@ -21,7 +21,7 @@ export function Topo() {
   const { marca } = site;
   return (
     <AppBar position="sticky" elevation={0} sx={{ bgcolor: "superficie.base", color: "text.primary" }}>
-      <Container maxWidth="lg">
+      <Container>
         <Toolbar disableGutters sx={{ minHeight: { xs: 72 }, gap: 2 }}>
           <Box
             component="a"
@@ -54,18 +54,18 @@ export function Abertura() {
   const a = site.abertura;
   return (
     <Box component="section" sx={{ pt: 5, pb: 9 }}>
-      <Container maxWidth="lg" sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0,1fr)", md: "minmax(0,1fr) minmax(0,1.05fr)" }, gap: 6, alignItems: "center" }}>
+      <Container sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0,1fr)", md: "minmax(0,1fr) minmax(0,1.05fr)" }, gap: 6, alignItems: "center" }}>
         <Stack spacing={3}>
           <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 1 }}>
             {a.chips.map((c) => (
-              <Chip key={c.texto} variant="outlined" icon={<Icone nome={c.icone} />} label={c.texto} sx={{ color: "text.secondary", fontWeight: 500 }} />
+              <Chip key={c.texto} variant="outlined" icon={<Icone nome={c.icone} />} label={c.texto} sx={{ color: "text.secondary", "& .MuiChip-icon": { color: "inherit" } }} />
             ))}
           </Stack>
-          <Typography variant="h1" sx={{ fontSize: "clamp(38px, 5.4vw, 60px)" }}>
+          <Typography variant="h1" sx={{ fontSize: "clamp(38px, 4.6vw, 72px)" }}>
             {a.titulo}{" "}
             <Box component="span" sx={{ color: "primary.main", fontWeight: 700 }}>{a.destaque}</Box>.
           </Typography>
-          <Typography sx={{ fontSize: 18, lineHeight: 1.6, color: "text.secondary", maxWidth: 520 }}>{a.texto}</Typography>
+          <Typography sx={{ fontSize: 18, lineHeight: 1.6, color: "text.secondary", maxWidth: 600 }}>{a.texto}</Typography>
           <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 1.5 }}>
             <Button size="large" variant="contained" href={a.botaoPrincipal.alvo} startIcon={<Icone nome={a.botaoPrincipal.icone} />}>
               {a.botaoPrincipal.texto}

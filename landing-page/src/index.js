@@ -1,6 +1,6 @@
 // Worker da landing page (tghservices.com.br).
 // /                 página em React + Material UI (build do Vite em dist/), status 200
-// /curriculo        currículo (public/curriculo.html), status 200
+// /curriculo        currículo em React (curriculo.html do build), status 200
 // /assets/*         JS, CSS e fontes do build, com cache longo (os nomes têm hash)
 // /img/*, logo, robots.txt: arquivos estáticos
 // POST /api/pedido  formulário de pedido: valida e manda para o e-mail em PEDIDO_PARA
@@ -9,10 +9,10 @@
 const ROTAS_CURRICULO = new Set(["/curriculo", "/curriculo/", "/curriculo.html"]);
 const ROTAS_INICIO = new Set(["/", "/index.html"]);
 
-// Página inicial: o MUI injeta estilos em <style>, por isso 'unsafe-inline' só em style-src.
+// Página inicial e currículo (React): o MUI injeta estilos em <style>, por isso 'unsafe-inline' só em style-src.
 const CSP_INICIO =
   "default-src 'none'; img-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-// Currículo e 404: só estilos inline e imagens locais.
+// Página 404: só estilos inline e imagens locais.
 const CSP_SIMPLES =
   "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
@@ -152,7 +152,7 @@ export default {
         return Response.redirect(new URL("/curriculo", url), 301);
       }
       const curriculo = await env.ASSETS.fetch(new URL("/curriculo", url));
-      const headers = cabecalhosHtml(curriculo.headers, CSP_SIMPLES);
+      const headers = cabecalhosHtml(curriculo.headers, CSP_INICIO);
       headers.set("Cache-Control", "public, max-age=300");
       return new Response(semCorpo ? null : curriculo.body, { status: 200, headers });
     }
