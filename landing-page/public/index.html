@@ -3,138 +3,399 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
+<title>TGH Services · Apps sob medida de Pierre Alves</title>
+<meta name="description" content="Vitrine dos apps da TGH Services e portfólio de Pierre Alves, desenvolvedor full stack. Apps web e mobile feitos sob medida.">
 <meta name="color-scheme" content="light dark">
-<title>TGH Services — Em manutenção</title>
 <link rel="icon" type="image/png" href="/logo-tghservices.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..800&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap">
 <style>
+  /* Material 3, esquema verde (semente #006A60). O azul do logo não é a cor principal. */
   :root {
-    --fundo: #f4f7fb;
-    --cartao: #ffffff;
-    --texto: #0b2545;
-    --texto-suave: #4a5d78;
-    --borda: #dbe4ef;
-    --destaque: #2f80d1;
-    --destaque-fundo: #e6f1fb;
+    --primary: #006A60; --on-primary: #FFFFFF;
+    --primary-container: #9EF2E4; --on-primary-container: #00201C;
+    --secondary-container: #CCE8E2; --on-secondary-container: #051F1C;
+    --tertiary-container: #CFE5FF; --on-tertiary-container: #001D34;
+    --surface: #F4FBF8; --surface-low: #EEF5F2; --surface-mid: #E9EFEC; --surface-high: #E3EAE7; --surface-highest: #DDE4E1;
+    --on-surface: #161D1C; --on-surface-variant: #3F4947;
+    --outline: #6F7977; --outline-variant: #BEC9C6;
+    --logo-bg: transparent;
+    --shadow-1: 0 1px 2px rgba(0,0,0,.15), 0 1px 3px 1px rgba(0,0,0,.08);
+    --shadow-3: 0 1px 3px rgba(0,0,0,.3), 0 4px 8px 3px rgba(0,0,0,.15);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --fundo: #07182e;
-      --cartao: #0d223d;
-      --texto: #eaf2fb;
-      --texto-suave: #a9bbd1;
-      --borda: #1b3556;
-      --destaque: #6fb1f0;
-      --destaque-fundo: #12345a;
+      --primary: #82D5C8; --on-primary: #003731;
+      --primary-container: #005048; --on-primary-container: #9EF2E4;
+      --secondary-container: #334B47; --on-secondary-container: #CCE8E2;
+      --tertiary-container: #244A6A; --on-tertiary-container: #CFE5FF;
+      --surface: #0E1513; --surface-low: #161D1C; --surface-mid: #1A2120; --surface-high: #252B2A; --surface-highest: #2F3635;
+      --on-surface: #DDE4E1; --on-surface-variant: #BEC9C6;
+      --outline: #899390; --outline-variant: #3F4947;
+      --logo-bg: #FFFFFF;
     }
   }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
-  body {
-    background: var(--fundo);
-    color: var(--texto);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 16px;
-    -webkit-font-smoothing: antialiased;
-  }
-  main {
-    width: 100%;
-    max-width: 520px;
-    background: var(--cartao);
-    border: 1px solid var(--borda);
-    border-radius: 20px;
-    padding: 40px 32px 36px;
-    text-align: center;
-    box-shadow: 0 12px 40px rgba(11, 37, 69, 0.08);
-  }
-  .logo {
-    display: inline-block;
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 8px 12px;
-  }
-  .logo img { display: block; width: 260px; max-width: 100%; height: auto; }
-  .divisor { width: 48px; height: 3px; border-radius: 3px; background: var(--destaque); margin: 28px auto 24px; }
-  .selo {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--destaque);
-    background: var(--destaque-fundo);
-    border-radius: 999px;
-    padding: 6px 14px;
-  }
-  .selo::before {
-    content: "";
-    width: 8px; height: 8px; border-radius: 50%;
-    background: currentColor;
-    animation: pulso 1.8s ease-in-out infinite;
-  }
-  @keyframes pulso { 50% { opacity: .35; } }
-  @media (prefers-reduced-motion: reduce) { .selo::before { animation: none; } }
-  h1 { font-size: 26px; line-height: 1.25; margin: 18px 0 10px; letter-spacing: -0.01em; }
-  p { font-size: 16px; line-height: 1.6; color: var(--texto-suave); margin: 0 auto; max-width: 380px; }
-  .atalhos {
-    width: 100%;
-    max-width: 520px;
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .atalho {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    text-align: left;
-    color: var(--texto);
-    background: var(--cartao);
-    border: 1px solid var(--borda);
-    border-radius: 16px;
-    padding: 16px 18px;
-    text-decoration: none;
-    touch-action: manipulation;
-    transition: border-color .15s, transform .15s;
-  }
-  .atalho strong { font-size: 15px; color: var(--destaque); }
-  .atalho .descricao { font-size: 14px; line-height: 1.45; color: var(--texto-suave); }
-  .atalho:hover { border-color: var(--destaque); transform: translateY(-1px); }
-  .atalho:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { .atalho { transition: none; } .atalho:hover { transform: none; } }
-  footer { margin-top: 20px; font-size: 13px; color: var(--texto-suave); }
-  @media (max-width: 480px) {
-    main { padding: 32px 20px 28px; border-radius: 16px; }
-    .logo img { width: 210px; }
-    h1 { font-size: 22px; }
-    p { font-size: 15px; }
-    .atalhos { grid-template-columns: 1fr; }
-  }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--surface); color: var(--on-surface); font-family: "Roboto Flex", Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  img { max-width: 100%; }
+  .ms { font-family: "Material Symbols Rounded"; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1; display: inline-block; white-space: nowrap; font-feature-settings: "liga"; -webkit-font-feature-settings: "liga"; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  @media (min-width: 900px) { .wrap { padding-left: 32px; padding-right: 32px; } }
+  :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+  /* Botões e chips */
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 24px; border-radius: 24px; font: 500 15px/1 inherit; font-family: inherit; text-decoration: none; border: none; cursor: pointer; }
+  .btn .ms { font-size: 20px; }
+  .btn-filled { background: var(--primary); color: var(--on-primary); padding-left: 20px; }
+  .btn-outlined { border: 1px solid var(--outline); color: var(--primary); background: transparent; }
+  .btn-tonal { background: var(--secondary-container); color: var(--on-secondary-container); }
+  .btn-text { background: transparent; color: var(--primary); padding: 0 12px; }
+  .btn-sm { height: 40px; padding: 0 16px; font-size: 14px; border-radius: 20px; }
+  .btn:hover { filter: brightness(1.06); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--outline-variant); font-size: 14px; font-weight: 500; color: var(--on-surface-variant); }
+  .chip .ms { font-size: 18px; }
+  .tag { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--outline-variant); font-size: 13px; color: var(--on-surface-variant); }
+  .label { font-size: 14px; font-weight: 500; letter-spacing: .1px; color: var(--primary); }
+  h1, h2, h3 { text-wrap: balance; }
+  .h2 { margin: 0; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; font-weight: 450; letter-spacing: -0.01em; }
+
+  /* Barra superior */
+  .topbar { position: sticky; top: 0; z-index: 10; background: var(--surface); }
+  .topbar .wrap { display: flex; align-items: center; gap: 16px; height: 72px; }
+  .logo { background: var(--logo-bg); border-radius: 12px; padding: 2px 6px; display: inline-flex; }
+  .logo img { height: 48px; width: auto; display: block; }
+  .nav { margin-left: auto; display: flex; gap: 4px; }
+  .nav a { text-decoration: none; font-size: 14px; font-weight: 500; color: var(--on-surface-variant); padding: 10px 16px; border-radius: 20px; }
+  .nav a:hover { background: var(--surface-high); }
+  @media (max-width: 760px) { .nav { display: none; } .topbar .btn-tonal { margin-left: auto; } }
+
+  /* Abertura */
+  .hero { padding: 40px 0 72px; }
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 48px; align-items: center; }
+  .hero-text { display: flex; flex-direction: column; gap: 24px; }
+  .hero h1 { margin: 0; font-size: clamp(38px, 5.4vw, 60px); line-height: 1.07; font-weight: 450; letter-spacing: -0.02em; font-variation-settings: "opsz" 96; }
+  .hero h1 em { font-style: normal; color: var(--primary); font-weight: 650; }
+  .hero p { margin: 0; font-size: 18px; line-height: 1.6; color: var(--on-surface-variant); max-width: 520px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .row-12 { display: flex; flex-wrap: wrap; gap: 12px; }
+  .hero-visual { position: relative; padding-bottom: 40px; }
+  .browser { background: var(--surface-high); border-radius: 28px; padding: 12px; box-shadow: var(--shadow-1); }
+  .browser-bar { display: flex; align-items: center; gap: 6px; padding: 4px 8px 10px; font-size: 12px; color: var(--on-surface-variant); min-width: 0; }
+  .browser-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--outline-variant); flex: none; }
+  .browser-bar span { margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .browser img { display: block; width: 100%; height: auto; border-radius: 16px; }
+  .phone { position: absolute; right: -8px; bottom: 0; width: 34%; max-width: 200px; background: var(--surface-highest); border-radius: 28px; padding: 7px; box-shadow: var(--shadow-3); }
+  .phone img { display: block; width: 100%; height: auto; aspect-ratio: 9 / 17; object-fit: cover; object-position: top; border-radius: 22px; }
+  @media (max-width: 900px) { .hero .wrap { grid-template-columns: minmax(0, 1fr); } .phone { right: 0; } }
+
+  /* Vitrine */
+  .section { padding: 0 0 72px; }
+  .section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  .section-head > div { display: flex; flex-direction: column; gap: 8px; }
+  .icon-btn { width: 48px; height: 48px; border-radius: 24px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--outline); background: transparent; color: var(--on-surface); }
+  .icon-btn.filled { border: none; background: var(--primary); color: var(--on-primary); }
+  .track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 4px 4px 12px; margin: 0 -4px; scrollbar-width: none; }
+  .track::-webkit-scrollbar { display: none; }
+  .card { flex: 0 0 calc((100% - 24px) / 2); min-width: 0; scroll-snap-align: start; background: var(--surface-low); border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-1); }
+  @media (max-width: 900px) { .card { flex-basis: 86%; } }
+  .shots { position: relative; aspect-ratio: 16 / 9; background: var(--surface-highest); overflow: hidden; }
+  .shots img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left top; opacity: 0; transition: opacity .5s ease; }
+  .shots img.on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .shots img { transition: none; } }
+  .shots .caption { position: absolute; left: 12px; bottom: 12px; height: 28px; padding: 0 10px; border-radius: 8px; background: rgba(18,20,22,.74); color: #fff; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+  .shots .caption small { opacity: .7; font-size: 12px; }
+  .shots .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 22px; border: none; cursor: pointer; background: var(--surface-highest); color: var(--on-surface); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .shots .prev { left: 10px; } .shots .next { right: 10px; }
+  .dots { position: absolute; right: 8px; bottom: 6px; display: flex; }
+  .dots button { width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .dots button span { display: block; width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.55); box-shadow: 0 0 0 1px rgba(0,0,0,.25); transition: width .2s; }
+  .dots button[aria-current="true"] span { width: 20px; background: #fff; }
+  .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: var(--secondary-container); color: var(--on-secondary-container); font-size: 13px; }
+  .placeholder .ms { font-size: 64px; }
+  .card-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+  .card-head { display: flex; align-items: center; gap: 12px; }
+  .app-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--primary-container); color: var(--on-primary-container); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .card-head div { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .card-head h3 { margin: 0; font-size: 22px; font-weight: 500; }
+  .card-head div span { font-size: 14px; color: var(--on-surface-variant); }
+  .status { height: 28px; display: inline-flex; align-items: center; gap: 4px; padding: 0 10px 0 8px; border-radius: 8px; background: var(--tertiary-container); color: var(--on-tertiary-container); font-size: 12px; font-weight: 500; flex: none; }
+  .status .ms { font-size: 16px; }
+  .card p { margin: 0; font-size: 16px; line-height: 1.55; color: var(--on-surface-variant); }
+  .features { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .features li { display: flex; gap: 12px; align-items: flex-start; }
+  .features .ms { font-size: 20px; color: var(--primary); flex: none; }
+  .features strong { display: block; font-size: 15px; font-weight: 500; }
+  .features span:not(.ms) { font-size: 14px; line-height: 1.45; color: var(--on-surface-variant); }
+  .card-tags { margin-top: auto; }
+  .card-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .card-next { flex: 0 0 calc((100% - 24px) / 2); scroll-snap-align: start; text-decoration: none; border-radius: 28px; border: 2px dashed var(--outline); display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 12px; padding: 32px; min-height: 360px; }
+  @media (max-width: 900px) { .card-next { flex-basis: 86%; } }
+  .card-next .app-icon { width: 56px; height: 56px; border-radius: 16px; }
+  .card-next strong { font-size: 28px; font-weight: 450; line-height: 1.2; }
+  .card-next > span:not(.app-icon) { font-size: 15px; line-height: 1.5; color: var(--on-surface-variant); }
+  .card-next .more { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-size: 14px; font-weight: 500; }
+
+  /* Sob medida */
+  .custom { background: var(--primary-container); color: var(--on-primary-container); border-radius: 28px; padding: clamp(28px, 5vw, 48px) clamp(20px, 4vw, 40px); display: flex; flex-direction: column; gap: 32px; }
+  .custom-intro { display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
+  .custom-intro .label { color: inherit; }
+  .custom-intro p { margin: 0; font-size: 17px; line-height: 1.6; opacity: .85; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 900px) { .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .grid4 { grid-template-columns: minmax(0, 1fr); } }
+  .tile { background: var(--surface); color: var(--on-surface); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .tile .ms { color: var(--primary); }
+  .tile strong { font-size: 16px; font-weight: 500; }
+  .tile span:not(.ms) { font-size: 14px; line-height: 1.5; color: var(--on-surface-variant); }
+
+  /* Portfólio */
+  .port { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; }
+  @media (max-width: 900px) { .port { grid-template-columns: minmax(0, 1fr); } }
+  .bio { background: var(--surface-mid); border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+  .bio-head { display: flex; align-items: center; gap: 16px; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: var(--on-primary); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; flex: none; }
+  .bio-head div { display: flex; flex-direction: column; }
+  .bio-head strong { font-size: 22px; font-weight: 500; }
+  .bio-head span { font-size: 14px; color: var(--on-surface-variant); }
+  .bio p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--on-surface-variant); }
+  .bio .tag { border: none; background: var(--surface-highest); color: var(--on-surface); }
+  .list { background: var(--surface-low); border-radius: 28px; padding: 8px 0; display: flex; flex-direction: column; }
+  .list-head { padding: 20px 24px 8px; display: flex; flex-direction: column; gap: 4px; }
+  .list-head strong { font-size: 18px; font-weight: 500; }
+  .list-head span { font-size: 14px; color: var(--on-surface-variant); }
+  .list a { text-decoration: none; display: flex; gap: 16px; padding: 16px 24px; align-items: center; }
+  .list a:hover { background: var(--surface-mid); }
+  .list a .ms { color: var(--on-surface-variant); }
+  .list a div { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .list a strong { font-size: 16px; font-weight: 500; }
+  .list a div span { font-size: 14px; line-height: 1.5; color: var(--on-surface-variant); }
+  .list hr { border: none; height: 1px; background: var(--outline-variant); margin: 0 24px; }
+  .list a.all { color: var(--primary); font-size: 14px; font-weight: 500; }
+  .list a.all .ms { color: var(--primary); }
+
+  /* Contato */
+  .contact { background: var(--surface-high); border-radius: 28px; padding: clamp(24px, 4vw, 40px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
+  .contact div { display: flex; flex-direction: column; gap: 8px; max-width: 620px; }
+  .contact h2 { margin: 0; font-size: clamp(24px, 3vw, 32px); line-height: 1.2; font-weight: 450; }
+  .contact span { font-size: 16px; color: var(--on-surface-variant); }
+  .fab { display: inline-flex; align-items: center; gap: 12px; height: 56px; padding: 0 24px 0 16px; border-radius: 16px; background: var(--primary-container); color: var(--on-primary-container); font-size: 16px; font-weight: 500; text-decoration: none; box-shadow: var(--shadow-3); }
+  footer .wrap { padding-top: 8px; padding-bottom: 32px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--on-surface-variant); }
 </style>
 </head>
 <body>
-  <main>
-    <div class="logo"><img src="/logo-tghservices.png" width="500" height="250" alt="TGH Services"></div>
-    <div class="divisor" aria-hidden="true"></div>
-    <span class="selo">Em manutenção</span>
-    <h1>Estamos em manutenção</h1>
-    <p>Estamos preparando novidades para você. O site volta em breve.</p>
-  </main>
-  <nav class="atalhos" aria-label="Atalhos">
-    <a class="atalho" href="https://controlepresenca.tghservices.com.br/">
-      <strong>Controle de Presença <span aria-hidden="true">→</span></strong>
-      <span class="descricao">App de presença das aulas (versão inicial).</span>
-    </a>
-    <a class="atalho" href="/curriculo">
-      <strong>Currículo <span aria-hidden="true">→</span></strong>
-      <span class="descricao">Conheça o currículo de Pierre Alves.</span>
-    </a>
-  </nav>
-  <footer>© 2026 TGH Services</footer>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="/" class="logo" aria-label="TGH Services, início"><img src="/logo-tghservices.png" width="500" height="250" alt="TGH Services"></a>
+    <nav class="nav" aria-label="Seções">
+      <a href="#apps">Apps</a>
+      <a href="#sob-medida">Sob medida</a>
+      <a href="#portfolio">Portfólio</a>
+    </nav>
+    <a href="#contato" class="btn btn-tonal btn-sm"><span class="ms" aria-hidden="true">mail</span>Fale comigo</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-text">
+        <div class="row">
+          <span class="chip"><span class="ms" aria-hidden="true">language</span>Web</span>
+          <span class="chip"><span class="ms" aria-hidden="true">smartphone</span>Android e iOS</span>
+          <span class="chip"><span class="ms" aria-hidden="true">wifi_off</span>Funciona offline</span>
+        </div>
+        <h1>Apps que eu criei, e o próximo pode ser <em>o seu</em>.</h1>
+        <p>Sou Pierre Alves, desenvolvedor full stack. Na TGH Services eu publico os apps que já estão no ar e faço apps sob medida para o jeito que o seu negócio trabalha.</p>
+        <div class="row-12">
+          <a href="#apps" class="btn btn-filled"><span class="ms" aria-hidden="true">apps</span>Ver os apps</a>
+          <a href="#sob-medida" class="btn btn-outlined">Quero um app sob medida</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="browser">
+          <div class="browser-bar" aria-hidden="true"><i></i><i></i><i></i><span>controlepresenca.tghservices.com.br</span></div>
+          <img src="/img/presenca-painel.webp" width="1085" height="672" alt="Painel do Controle de Presença, com dados fictícios">
+        </div>
+        <div class="phone"><img src="/img/cine-celular.webp" width="585" height="996" alt="CineOnline aberto no celular" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VITRINE: para incluir um app novo, copie um <article class="card"> inteiro e troque textos, imagens e links. -->
+  <section id="apps" class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="label">Vitrine</span>
+          <h2 class="h2">Apps da TGH</h2>
+        </div>
+        <div class="row" style="flex-direction: row">
+          <button type="button" class="icon-btn" data-track="prev" aria-label="Apps anteriores"><span class="ms" aria-hidden="true">arrow_back</span></button>
+          <button type="button" class="icon-btn filled" data-track="next" aria-label="Próximos apps"><span class="ms" aria-hidden="true">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <div class="track" id="vitrine">
+        <article class="card">
+          <div class="shots" data-shots>
+            <img class="on" src="/img/presenca-painel.webp" alt="Painel do professor" data-label="Painel do professor">
+            <img src="/img/presenca-relatorios.webp" alt="Relatórios" data-label="Relatórios" loading="lazy">
+            <img src="/img/presenca-admin.webp" alt="Administração das academias" data-label="Administração" loading="lazy">
+            <img src="/img/presenca-entrada.webp" alt="Tela de entrada" data-label="Entrada" loading="lazy" style="object-position: left center">
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <span class="app-icon"><span class="ms" aria-hidden="true">sports_martial_arts</span></span>
+              <div><h3>Controle de Presença</h3><span>Academias de artes marciais</span></div>
+              <span class="status"><span class="ms" aria-hidden="true">check_circle</span>No ar</span>
+            </div>
+            <p>A chamada da academia no celular, e os relatórios prontos no fim do mês.</p>
+            <ul class="features">
+              <li><span class="ms" aria-hidden="true">wifi_off</span><div><strong>Presença no tatame, sem internet</strong><span>Lança a chamada offline e envia quando o sinal voltar.</span></div></li>
+              <li><span class="ms" aria-hidden="true">bar_chart</span><div><strong>Relatórios sem somar à mão</strong><span>Semanal, mensal, anual e por aluno, para imprimir ou salvar em PDF.</span></div></li>
+              <li><span class="ms" aria-hidden="true">military_tech</span><div><strong>Frequência para graduação</strong><span>Mostra quem está abaixo do mínimo da turma, a qualquer momento.</span></div></li>
+              <li><span class="ms" aria-hidden="true">admin_panel_settings</span><div><strong>Várias academias, um sistema</strong><span>O administrador cadastra academias e professores e importa alunos por planilha.</span></div></li>
+            </ul>
+            <div class="row card-tags"><span class="tag">Flutter</span><span class="tag">Cloudflare Workers</span><span class="tag">D1</span></div>
+            <div class="card-actions">
+              <a class="btn btn-filled btn-sm" href="https://controlepresenca.tghservices.com.br/"><span class="ms" aria-hidden="true">open_in_new</span>Abrir app</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="shots" data-shots>
+            <img class="on" src="/img/cine-sala.webp" alt="Sala com vídeo e chat ao vivo" data-label="Sala com chat ao vivo" style="object-position: center">
+            <img src="/img/cine-fila.webp" alt="Fila de vídeos e histórico" data-label="Fila e histórico" loading="lazy" style="object-position: center top">
+            <img src="/img/cine-admin.webp" alt="Painel do administrador" data-label="Painel do administrador" loading="lazy" style="object-position: center top">
+            <img src="/img/cine-inicio.webp" alt="Página inicial" data-label="Página inicial" loading="lazy" style="object-position: center top">
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <span class="app-icon"><span class="ms" aria-hidden="true">movie</span></span>
+              <div><h3>CineOnline</h3><span>Para assistir junto, à distância</span></div>
+              <span class="status"><span class="ms" aria-hidden="true">check_circle</span>No ar</span>
+            </div>
+            <p>Seus vídeos do Drive, seus amigos, o mesmo minuto. Salas privadas para até 24 pessoas, com chat ao vivo.</p>
+            <ul class="features">
+              <li><span class="ms" aria-hidden="true">queue_play_next</span><div><strong>Monte a fila</strong><span>Escolha vídeos e legendas direto do seu Google Drive.</span></div></li>
+              <li><span class="ms" aria-hidden="true">link</span><div><strong>Mande o link</strong><span>Convidados entram pelo link, sem criar conta.</span></div></li>
+              <li><span class="ms" aria-hidden="true">play_circle</span><div><strong>Assistam juntos</strong><span>Play e pause valem para todos na sala.</span></div></li>
+              <li><span class="ms" aria-hidden="true">monitoring</span><div><strong>Painel do administrador ao vivo</strong><span>Salas abertas, pessoas conectadas, denúncias e moderação num só lugar.</span></div></li>
+            </ul>
+            <div class="row card-tags"><span class="tag">PWA</span><span class="tag">Google Drive</span><span class="tag">Cloudflare</span></div>
+            <div class="card-actions">
+              <a class="btn btn-filled btn-sm" href="https://cineminha.tghservices.com.br/"><span class="ms" aria-hidden="true">open_in_new</span>Abrir app</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="shots">
+            <div class="placeholder"><span class="ms" aria-hidden="true">cake</span>Capturas em breve</div>
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <span class="app-icon"><span class="ms" aria-hidden="true">cake</span></span>
+              <div><h3>Lembretes de Aniversários</h3><span>Para não esquecer datas importantes</span></div>
+              <span class="status"><span class="ms" aria-hidden="true">code</span>Código aberto</span>
+            </div>
+            <p>Organiza aniversários e outras datas e ajuda a mandar a mensagem certa no dia.</p>
+            <ul class="features">
+              <li><span class="ms" aria-hidden="true">event</span><div><strong>Datas organizadas</strong><span>Aniversários e datas importantes num só lugar.</span></div></li>
+              <li><span class="ms" aria-hidden="true">chat</span><div><strong>Mensagens prontas no WhatsApp</strong><span>Envia o recado com um toque.</span></div></li>
+              <li><span class="ms" aria-hidden="true">add_to_drive</span><div><strong>Seus dados no seu Drive</strong><span>Tudo fica guardado no Google Drive do próprio usuário.</span></div></li>
+            </ul>
+            <div class="row card-tags"><span class="tag">Flutter</span><span class="tag">Google Drive</span></div>
+            <div class="card-actions">
+              <a class="btn btn-text btn-sm" href="https://github.com/PierreSalves/lembretesaniversarios_v2">Ver código</a>
+            </div>
+          </div>
+        </article>
+
+        <a href="#sob-medida" class="card-next">
+          <span class="app-icon"><span class="ms" aria-hidden="true">add</span></span>
+          <strong>O próximo app pode ser o seu.</strong>
+          <span>Conte o problema que você quer resolver e eu monto um app sob medida.</span>
+          <span class="more">Como funciona <span class="ms" aria-hidden="true" style="font-size: 18px">arrow_downward</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="sob-medida" class="section">
+    <div class="wrap">
+      <div class="custom">
+        <div class="custom-intro">
+          <span class="label">Sob medida</span>
+          <h2 class="h2">Nenhum desses apps saiu de um modelo pronto. O seu também não vai sair.</h2>
+          <p>Cada app começa com o problema de alguém: a chamada no papel do professor, o filme que os amigos queriam ver juntos. Eu construo em cima do jeito que você já trabalha.</p>
+        </div>
+        <div class="grid4">
+          <div class="tile"><span class="ms" aria-hidden="true">forum</span><strong>Seu processo</strong><span>Telas e regras pensadas para a sua rotina, não o contrário.</span></div>
+          <div class="tile"><span class="ms" aria-hidden="true">palette</span><strong>Sua marca</strong><span>Nome, cores e domínio seus, instalável no celular.</span></div>
+          <div class="tile"><span class="ms" aria-hidden="true">wifi_off</span><strong>Sem depender de sinal</strong><span>Funciona offline e sincroniza quando a internet volta.</span></div>
+          <div class="tile"><span class="ms" aria-hidden="true">support_agent</span><strong>Depois da entrega</strong><span>Hospedagem, correções e novas funções com quem fez o app.</span></div>
+        </div>
+        <div><a href="#contato" class="btn btn-filled"><span class="ms" aria-hidden="true">edit_note</span>Contar a minha ideia</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="portfolio" class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="label">Portfólio</span>
+          <h2 class="h2">Quem está por trás dos apps</h2>
+        </div>
+      </div>
+      <div class="port">
+        <div class="bio">
+          <div class="bio-head">
+            <span class="avatar" aria-hidden="true">PA</span>
+            <div><strong>Pierre Alves</strong><span>Desenvolvedor full stack · Tupã, SP</span></div>
+          </div>
+          <p>Desenvolvedor web pleno na GSA Soluções desde 2023, trabalhando com PHP, Node.js, Oracle e servidores em nuvem. Bacharel em Sistemas de Informação, especialista em UX e ex-professor universitário.</p>
+          <div class="row"><span class="tag">PHP · Laravel</span><span class="tag">Node.js</span><span class="tag">Flutter</span><span class="tag">React</span><span class="tag">Oracle</span><span class="tag">Cloudflare</span></div>
+          <div class="row">
+            <a class="btn btn-tonal btn-sm" href="/curriculo"><span class="ms" aria-hidden="true">description</span>Currículo completo</a>
+            <a class="btn btn-text btn-sm" href="https://www.linkedin.com/in/pierre-alves/">LinkedIn</a>
+            <a class="btn btn-text btn-sm" href="https://github.com/PierreSalves">GitHub</a>
+          </div>
+        </div>
+        <div class="list">
+          <div class="list-head"><strong>Outros projetos</strong><span>Projetos de estudo e competições, com código aberto.</span></div>
+          <a href="https://github.com/PierreSalves/crudSpots"><span class="ms" aria-hidden="true">travel_explore</span><div><strong>crudSpots</strong><span>Cadastro de pontos turísticos com React e API em ASP.NET Core.</span></div><span class="ms" aria-hidden="true">chevron_right</span></a>
+          <hr>
+          <a href="https://github.com/PierreSalves/GincanaFaccat-MedicMatch"><span class="ms" aria-hidden="true">emoji_events</span><div><strong>MedicMatch</strong><span>Sistema em Laravel feito para a gincana de tecnologia da Faccat.</span></div><span class="ms" aria-hidden="true">chevron_right</span></a>
+          <hr>
+          <a class="all" href="https://github.com/PierreSalves?tab=repositories"><span class="ms" aria-hidden="true">code</span>Ver todos os projetos no GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contato" class="section" style="padding-bottom: 56px">
+    <div class="wrap">
+      <div class="contact">
+        <div>
+          <h2>Tem um processo que ainda vive no papel ou na planilha?</h2>
+          <span>tghservices.psa@gmail.com</span>
+        </div>
+        <a class="fab" href="mailto:tghservices.psa@gmail.com"><span class="ms" aria-hidden="true">send</span>Enviar e-mail</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>© 2026 TGH Services · Pierre Alves</span><span>Tupã, SP</span></div></footer>
+
+<script src="/app.js" defer></script>
 </body>
 </html>
