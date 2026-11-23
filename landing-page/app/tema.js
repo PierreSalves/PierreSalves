@@ -1,73 +1,66 @@
 // Tema Material a partir de uma única cor (site.config.js > tema.corPrincipal).
-// Gera as cores de superfície e de "container" do Material 3 para o modo claro e o escuro.
-import { createTheme, lighten, darken, alpha } from "@mui/material/styles";
+// As cores claro e escuro saem do algoritmo oficial do Material 3 (esquema "Tonal Spot"
+// da biblioteca material-color-utilities do Google), as mesmas do wireframe.
+import { createTheme } from "@mui/material/styles";
+import { argbFromHex, hexFromArgb, Hct, SchemeTonalSpot, MaterialDynamicColors as M3 } from "@material/material-color-utilities";
 
-function mistura(base, cor, quanto) {
-  // Mistura `cor` sobre `base` (as duas em #RRGGBB).
-  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-  const [a, b] = [p(base), p(cor)];
-  return "#" + a.map((v, i) => Math.round(v + (b[i] - v) * quanto).toString(16).padStart(2, "0")).join("");
-}
-
-function paletas(cor) {
-  const claro = {
-    primary: { main: cor, contrastText: "#FFFFFF" },
-    secondary: { main: darken(cor, 0.25) },
-    container: { main: lighten(cor, 0.8), contrastText: darken(cor, 0.75) },
-    tonal: { main: mistura("#FFFFFF", cor, 0.18), contrastText: darken(cor, 0.7) },
-    destaque: { main: "#CFE5FF", contrastText: "#001D34" },
+function esquema(cor, escuro) {
+  const s = new SchemeTonalSpot(Hct.fromInt(argbFromHex(cor)), escuro, 0);
+  const c = (nome) => hexFromArgb(M3[nome].getArgb(s));
+  return {
+    primary: { main: c("primary"), contrastText: c("onPrimary") },
+    secondary: { main: c("secondary"), contrastText: c("onSecondary") },
+    // Nomes curtos usados no sx: "container.main", "tonal.main", "superficie.alta" etc.
+    container: { main: c("primaryContainer"), contrastText: c("onPrimaryContainer") },
+    tonal: { main: c("secondaryContainer"), contrastText: c("onSecondaryContainer") },
+    destaque: { main: c("tertiaryContainer"), contrastText: c("onTertiaryContainer") },
     superficie: {
-      base: mistura("#FFFFFF", cor, 0.04),
-      baixa: mistura("#FFFFFF", cor, 0.07),
-      media: mistura("#FFFFFF", cor, 0.09),
-      alta: mistura("#FFFFFF", cor, 0.12),
-      maxima: mistura("#FFFFFF", cor, 0.15),
+      base: c("surface"),
+      baixa: c("surfaceContainerLow"),
+      media: c("surfaceContainer"),
+      alta: c("surfaceContainerHigh"),
+      maxima: c("surfaceContainerHighest"),
     },
-    background: { default: mistura("#FFFFFF", cor, 0.04), paper: mistura("#FFFFFF", cor, 0.07) },
-    text: { primary: "#161D1C", secondary: "#3F4947" },
-    divider: alpha("#3F4947", 0.24),
+    contorno: { main: c("outline"), suave: c("outlineVariant") },
+    background: { default: c("surface"), paper: c("surfaceContainerLow") },
+    text: { primary: c("onSurface"), secondary: c("onSurfaceVariant") },
+    divider: c("outlineVariant"),
   };
-  const fundoEscuro = mistura("#0B0F0E", cor, 0.04);
-  const escuro = {
-    primary: { main: lighten(cor, 0.5), contrastText: darken(cor, 0.5) },
-    secondary: { main: lighten(cor, 0.65) },
-    container: { main: darken(cor, 0.25), contrastText: lighten(cor, 0.8) },
-    tonal: { main: mistura("#0B0F0E", cor, 0.3), contrastText: lighten(cor, 0.85) },
-    destaque: { main: "#244A6A", contrastText: "#CFE5FF" },
-    superficie: {
-      base: fundoEscuro,
-      baixa: mistura("#0B0F0E", cor, 0.08),
-      media: mistura("#0B0F0E", cor, 0.11),
-      alta: mistura("#0B0F0E", cor, 0.15),
-      maxima: mistura("#0B0F0E", cor, 0.2),
-    },
-    background: { default: fundoEscuro, paper: mistura("#0B0F0E", cor, 0.08) },
-    text: { primary: "#DDE4E1", secondary: "#BEC9C6" },
-    divider: alpha("#BEC9C6", 0.2),
-  };
-  return { claro, escuro };
 }
 
 export function criarTema(cor) {
-  const { claro, escuro } = paletas(cor);
+  const claro = esquema(cor, false);
+  const escuro = esquema(cor, true);
   return createTheme({
     cssVariables: { colorSchemeSelector: "media" },
     colorSchemes: { light: { palette: claro }, dark: { palette: escuro } },
     // Com 4, borderRadius: 7 no sx vira 28px (o raio dos cartões do Material 3).
     shape: { borderRadius: 4 },
+    breakpoints: { values: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1600 } },
     typography: {
-      fontFamily: 'Roboto, system-ui, -apple-system, "Segoe UI", sans-serif',
-      h1: { fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.07 },
-      h2: { fontWeight: 400, letterSpacing: "-0.01em", lineHeight: 1.15 },
+      fontFamily: '"Roboto Flex Variable", Roboto, system-ui, -apple-system, "Segoe UI", sans-serif',
+      h1: { fontWeight: 450, letterSpacing: "-0.02em", lineHeight: 1.07, fontVariationSettings: '"opsz" 96' },
+      h2: { fontWeight: 450, letterSpacing: "-0.01em", lineHeight: 1.15 },
       h3: { fontWeight: 500 },
-      button: { textTransform: "none", fontWeight: 500, letterSpacing: 0.1 },
+      button: { textTransform: "none", fontWeight: 500, letterSpacing: 0.1, fontSize: 15 },
     },
     components: {
+      MuiContainer: {
+        // Ocupa telas largas até 1600 px, com margem de 32 px (16 px no celular), como no wireframe.
+        defaultProps: { maxWidth: "xl" },
+        styleOverrides: { root: ({ theme }) => ({ [theme.breakpoints.up("sm")]: { paddingLeft: 32, paddingRight: 32 } }) },
+      },
       MuiButton: {
         defaultProps: { disableElevation: true },
-        styleOverrides: { root: { borderRadius: 999, paddingInline: 20, minHeight: 40 }, sizeLarge: { minHeight: 48, paddingInline: 24, fontSize: 15 } },
+        styleOverrides: {
+          root: { borderRadius: 999, paddingInline: 24, minHeight: 40, fontSize: 14 },
+          sizeLarge: { minHeight: 48, paddingInline: 24, fontSize: 15 },
+          // Botão com contorno do Material 3: borda cinza (outline), texto na cor principal.
+          outlined: ({ theme }) => ({ borderColor: theme.vars.palette.contorno.main, "&:hover": { borderColor: theme.vars.palette.contorno.main } }),
+          text: { paddingInline: 12 },
+        },
       },
-      MuiChip: { styleOverrides: { root: { borderRadius: 8 } } },
+      MuiChip: { styleOverrides: { root: { borderRadius: 8, fontWeight: 500 }, outlined: ({ theme }) => ({ borderColor: theme.vars.palette.contorno.suave }) } },
       MuiCard: { defaultProps: { elevation: 0 }, styleOverrides: { root: { borderRadius: 28 } } },
       MuiDialog: { styleOverrides: { paper: { borderRadius: 28 } } },
       MuiTextField: { defaultProps: { fullWidth: true } },

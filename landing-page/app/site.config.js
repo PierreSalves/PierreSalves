@@ -40,7 +40,7 @@ const site = {
 
   abertura: {
     chips: [
-      { icone: "web", texto: "Web" },
+      { icone: "site", texto: "Web" },
       { icone: "celular", texto: "Android e iOS" },
       { icone: "offline", texto: "Funciona offline" },
     ],

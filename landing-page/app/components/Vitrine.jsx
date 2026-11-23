@@ -28,7 +28,8 @@ export function CabecalhoSecao({ rotulo, titulo, children }) {
   );
 }
 
-const larguraCartao = { flex: { xs: "0 0 86%", md: "0 0 calc((100% - 24px) / 2)" }, minWidth: 0, scrollSnapAlign: "start" };
+// 1 cartão e meio no celular, 2 no tablet/notebook e 3 em telas largas.
+const larguraCartao = { flex: { xs: "0 0 86%", md: "0 0 calc((100% - 24px) / 2)", lg: "0 0 calc((100% - 48px) / 3)" }, minWidth: 0, scrollSnapAlign: "start" };
 
 function CartaoApp({ app }) {
   const abrirPedido = useAbrirPedido();
@@ -93,10 +94,10 @@ export function Vitrine() {
   };
   return (
     <Box component="section" id="apps" sx={{ pb: 9 }}>
-      <Container maxWidth="lg">
+      <Container>
         <CabecalhoSecao rotulo={v.rotulo} titulo={v.titulo}>
           <Stack direction="row" spacing={1}>
-            <IconButton aria-label="Apps anteriores" onClick={() => rolar(-1)} sx={{ border: 1, borderColor: "divider", width: 48, height: 48 }}>
+            <IconButton aria-label="Apps anteriores" onClick={() => rolar(-1)} sx={{ border: 1, borderColor: "contorno.main", color: "text.primary", width: 48, height: 48 }}>
               <ArrowBackRounded />
             </IconButton>
             <IconButton aria-label="Próximos apps" onClick={() => rolar(1)} sx={{ width: 48, height: 48, bgcolor: "primary.main", color: "primary.contrastText", "&:hover": { bgcolor: "primary.main", filter: "brightness(1.08)" } }}>
@@ -124,7 +125,7 @@ export function Vitrine() {
               color: "text.primary",
               borderRadius: 7,
               border: "2px dashed",
-              borderColor: "text.secondary",
+              borderColor: "contorno.main",
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",

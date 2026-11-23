@@ -25,7 +25,7 @@ export function SobMedida() {
   const s = site.sobMedida;
   return (
     <Box component="section" id="sob-medida" sx={{ pb: 9 }}>
-      <Container maxWidth="lg">
+      <Container>
         <Box sx={{ bgcolor: "container.main", color: "container.contrastText", borderRadius: 7, px: "clamp(20px, 4vw, 40px)", py: "clamp(28px, 5vw, 48px)", display: "flex", flexDirection: "column", gap: 4 }}>
           <Stack spacing={1.5} sx={{ maxWidth: 720 }}>
             <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{s.rotulo}</Typography>
@@ -57,7 +57,7 @@ export function Servicos() {
   const s = site.servicos;
   return (
     <Box component="section" id="servicos" sx={{ pb: 9 }}>
-      <Container maxWidth="lg">
+      <Container>
         <CabecalhoSecao rotulo={s.rotulo} titulo={s.titulo} />
         <Typography sx={{ color: "text.secondary", mt: -1.5, mb: 3.5, maxWidth: 640 }}>{s.texto}</Typography>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0,1fr)", md: `repeat(${s.planos.length}, minmax(0,1fr))` }, gap: 3 }}>
@@ -99,7 +99,7 @@ export function Portfolio() {
   const { rotulo, titulo, pessoa, projetos } = site.portfolio;
   return (
     <Box component="section" id="portfolio" sx={{ pb: 9 }}>
-      <Container maxWidth="lg">
+      <Container>
         <CabecalhoSecao rotulo={rotulo} titulo={titulo} />
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0,1fr)", md: "minmax(0,1fr) minmax(0,1.3fr)" }, gap: 3 }}>
           <Stack spacing={2} sx={{ bgcolor: "superficie.media", borderRadius: 7, p: 3.5 }}>
@@ -159,11 +159,11 @@ export function Contato() {
   const c = site.contato;
   return (
     <Box component="section" id="contato" sx={{ pb: 7 }}>
-      <Container maxWidth="lg">
+      <Container>
         <Box sx={{ bgcolor: "superficie.alta", borderRadius: 7, p: "clamp(24px, 4vw, 40px)", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 3 }}>
           <Stack spacing={1} sx={{ maxWidth: 620 }}>
             <Typography variant="h2" sx={{ fontSize: "clamp(24px, 3vw, 32px)", lineHeight: 1.2 }}>{c.titulo}</Typography>
-            <Typography component="a" href={`mailto:${c.email}`} sx={{ color: "text.secondary" }}>{c.email}</Typography>
+            <Typography component="a" href={`mailto:${c.email}`} sx={{ color: "text.secondary", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}>{c.email}</Typography>
           </Stack>
           <Button
             onClick={() => abrirPedido(c.botao.tipo)}
@@ -181,7 +181,7 @@ export function Contato() {
 export function Rodape() {
   return (
     <Box component="footer">
-      <Container maxWidth="lg" sx={{ pt: 1, pb: 4, display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 1.5, fontSize: 14, color: "text.secondary" }}>
+      <Container sx={{ pt: 1, pb: 4, display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 1.5, fontSize: 14, color: "text.secondary" }}>
         <span>{site.rodape.esquerda}</span>
         <span>{site.rodape.direita}</span>
       </Container>
