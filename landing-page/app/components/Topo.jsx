@@ -9,6 +9,7 @@ import Typography from "@mui/material/Typography";
 import site from "../site.config.js";
 import { Icone } from "../icones.jsx";
 import { useAbrirPedido } from "./Pedido.jsx";
+import { ModoTema } from "./ModoTema.jsx";
 
 export const botaoTonal = {
   bgcolor: "tonal.main",
@@ -27,7 +28,7 @@ export function Topo() {
             component="a"
             href="/"
             aria-label={`${marca.nome}, início`}
-            sx={{ display: "inline-flex", borderRadius: 3, px: 0.75, py: 0.25, "@media (prefers-color-scheme: dark)": { bgcolor: marca.logoFundoNoEscuro } }}
+            sx={[{ display: "inline-flex", borderRadius: 3, px: 0.75, py: 0.25 }, (t) => t.applyStyles("dark", { bgcolor: marca.logoFundoNoEscuro })]}
           >
             <Box component="img" src={marca.logo} width={marca.logoLargura} height={marca.logoAltura} alt={marca.nome} sx={{ height: 48, width: "auto", display: "block" }} />
           </Box>
@@ -36,10 +37,11 @@ export function Topo() {
               <Button key={m.alvo} href={m.alvo} sx={{ color: "text.secondary" }}>{m.texto}</Button>
             ))}
           </Box>
+          <ModoTema sx={{ ml: { xs: "auto", md: 0 } }} />
           <Button
             onClick={() => abrirPedido(site.contato.botao.tipo)}
             startIcon={<Icone nome="email" />}
-            sx={{ ...botaoTonal, ml: { xs: "auto", md: 0 } }}
+            sx={botaoTonal}
           >
             Fale comigo
           </Button>

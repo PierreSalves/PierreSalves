@@ -22,6 +22,7 @@ import "@fontsource-variable/roboto-flex/opsz.css";
 import site from "./site.config.js";
 import cv from "./curriculo.config.js";
 import { criarTema } from "./tema.js";
+import { ModoTema } from "./components/ModoTema.jsx";
 
 const tema = criarTema(site.tema.corPrincipal);
 const ICONES = { email: MailRounded, github: GitHub, linkedin: LinkedIn };
@@ -80,7 +81,8 @@ function Curriculo() {
           <Button href="/" startIcon={<ArrowBackRounded />}>{site.marca.nome}</Button>
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
             <Button onClick={() => window.print()} startIcon={<PrintRounded />} sx={{ display: { xs: "none", sm: "inline-flex" } }}>Imprimir ou salvar PDF</Button>
-            <Box component="a" href="/" aria-label={`Página inicial da ${site.marca.nome}`} sx={{ display: "inline-flex", borderRadius: 3, px: 0.75, py: 0.25, "@media (prefers-color-scheme: dark)": { bgcolor: site.marca.logoFundoNoEscuro } }}>
+            <ModoTema />
+            <Box component="a" href="/" aria-label={`Página inicial da ${site.marca.nome}`} sx={[{ display: "inline-flex", borderRadius: 3, px: 0.75, py: 0.25 }, (t) => t.applyStyles("dark", { bgcolor: site.marca.logoFundoNoEscuro })]}>
               <Box component="img" src={site.marca.logo} width={site.marca.logoLargura} height={site.marca.logoAltura} alt={site.marca.nome} sx={{ height: 40, width: "auto", display: "block" }} />
             </Box>
           </Stack>

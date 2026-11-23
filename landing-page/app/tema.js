@@ -32,7 +32,8 @@ export function criarTema(cor) {
   const claro = esquema(cor, false);
   const escuro = esquema(cor, true);
   return createTheme({
-    cssVariables: { colorSchemeSelector: "media" },
+    // "class": o botão de tema põe .light ou .dark no <html>; em "sistema" o MUI segue o aparelho.
+    cssVariables: { colorSchemeSelector: "class" },
     colorSchemes: { light: { palette: claro }, dark: { palette: escuro } },
     // Com 4, borderRadius: 7 no sx vira 28px (o raio dos cartões do Material 3).
     shape: { borderRadius: 4 },
