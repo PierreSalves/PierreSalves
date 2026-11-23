@@ -1,20 +1,29 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  // Worker que serve tghservices.com.br e www.tghservices.com.br (modo manutenção + /curriculo).
+  // Worker que serve tghservices.com.br e www.tghservices.com.br (landing page, /curriculo e /api/pedido).
   "name": "tghservices-manutencao",
   "main": "src/index.js",
   "compatibility_date": "2026-10-01",
   "assets": {
-    "directory": "./public",
+    // Saída do `vite build` (a pasta public/ é copiada para dentro dela).
+    "directory": "./dist",
     "binding": "ASSETS",
-    // O Worker decide o status de cada rota (503 na manutenção, 200 no currículo),
-    // então ele roda antes dos arquivos estáticos.
+    // O Worker decide o status e os cabeçalhos de cada rota, então roda antes dos arquivos.
     "run_worker_first": true
   },
   "routes": [
     { "pattern": "tghservices.com.br", "custom_domain": true },
     { "pattern": "www.tghservices.com.br", "custom_domain": true }
   ],
+  // Formulário de pedido: o Worker manda o pedido por e-mail (Cloudflare Email Service).
+  // Grátis em qualquer plano porque o destino é um endereço verificado no Email Routing
+  // da conta. O remetente (PEDIDO_DE) precisa ser do domínio que está no Email Routing.
+  "send_email": [{ "name": "EMAIL", "destination_address": "tghservices.psa@gmail.com" }],
+  "vars": {
+    "PEDIDO_PARA": "tghservices.psa@gmail.com",
+    "PEDIDO_DE": "site@tghservices.com.br",
+    "PEDIDO_NOME": "Site TGH Services"
+  },
   "workers_dev": false,
   "observability": {
     "enabled": true,

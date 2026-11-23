@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Prévia da landing page em tghservices-landing-preview.<sua-conta>.workers.dev.
+  // Mesmo código do site oficial, sem domínio próprio. Deploy: npm run preview:deploy
+  "name": "tghservices-landing-preview",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    // Saída do `vite build` (a pasta public/ é copiada para dentro dela).
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // O Worker decide o status e os cabeçalhos de cada rota, então roda antes dos arquivos.
+    "run_worker_first": true
+  },
+  // Formulário de pedido: o Worker manda o pedido por e-mail (Cloudflare Email Service).
+  // Grátis em qualquer plano porque o destino é um endereço verificado no Email Routing
+  // da conta. O remetente (PEDIDO_DE) precisa ser do domínio que está no Email Routing.
+  "send_email": [{ "name": "EMAIL", "destination_address": "tghservices.psa@gmail.com" }],
+  "vars": {
+    "PEDIDO_PARA": "tghservices.psa@gmail.com",
+    "PEDIDO_DE": "site@tghservices.com.br",
+    "PEDIDO_NOME": "Site TGH Services"
+  },
+  // Prévia: só no endereço workers.dev, sem os domínios do site oficial.
+  "workers_dev": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": { "enabled": true, "invocation_logs": true }
+  }
+}

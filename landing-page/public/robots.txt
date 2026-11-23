@@ -2,11 +2,10 @@
 # Vale só para estes dois hosts: controlepresenca. e cineminha. têm o próprio robots.txt.
 #
 # Rotas deste Worker (src/index.js):
-#   /curriculo           200, página pública que pode ser indexada
-#   /logo-tghservices.png 200, imagem usada no currículo e na manutenção
-#   qualquer outra rota   503 + noindex (manutenção)
-#
-# Nada é bloqueado de propósito: a página de manutenção já sai com 503 e noindex,
-# e os buscadores só respeitam o noindex se puderem rastrear a página.
+#   /                     200, vitrine de apps e portfólio
+#   /curriculo            200, currículo
+#   /assets/*, /img/*     200, arquivos da página inicial
+#   /api/pedido           formulário (só POST)
+#   qualquer outra rota   404 + noindex
 User-agent: *
 Allow: /
