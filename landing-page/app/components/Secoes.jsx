@@ -19,6 +19,7 @@ import { Icone } from "../icones.jsx";
 import { useAbrirPedido } from "./Pedido.jsx";
 import { CabecalhoSecao } from "./Vitrine.jsx";
 import { botaoTonal } from "./Topo.jsx";
+import { novaGuia } from "../links.js";
 
 export function SobMedida() {
   const abrirPedido = useAbrirPedido();
@@ -120,7 +121,7 @@ export function Portfolio() {
             </Stack>
             <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 1 }}>
               {pessoa.links.map((l) => (
-                <Button key={l.url} href={l.url} startIcon={l.icone ? <Icone nome={l.icone} /> : null} sx={l.principal ? botaoTonal : undefined}>
+                <Button key={l.url} href={l.url} {...novaGuia(l.url)} startIcon={l.icone ? <Icone nome={l.icone} /> : null} sx={l.principal ? botaoTonal : undefined}>
                   {l.texto}
                 </Button>
               ))}
@@ -134,7 +135,7 @@ export function Portfolio() {
             <List disablePadding>
               {projetos.itens.map((p) => (
                 <Box key={p.url}>
-                  <ListItemButton component="a" href={p.url} sx={{ px: 3, py: 2 }}>
+                  <ListItemButton component="a" href={p.url} {...novaGuia(p.url)} sx={{ px: 3, py: 2 }}>
                     <ListItemIcon sx={{ minWidth: 40 }}><Icone nome={p.icone} /></ListItemIcon>
                     <ListItemText primary={p.nome} secondary={p.texto} slotProps={{ primary: { sx: { fontWeight: 500 } } }} />
                     <ChevronRightRounded aria-hidden="true" sx={{ color: "text.secondary" }} />
@@ -142,7 +143,7 @@ export function Portfolio() {
                   <Divider sx={{ mx: 3 }} />
                 </Box>
               ))}
-              <ListItemButton component="a" href={projetos.todos.url} sx={{ px: 3, py: 2, color: "primary.main" }}>
+              <ListItemButton component="a" href={projetos.todos.url} {...novaGuia(projetos.todos.url)} sx={{ px: 3, py: 2, color: "primary.main" }}>
                 <ListItemIcon sx={{ minWidth: 40, color: "inherit" }}><CodeRounded aria-hidden="true" /></ListItemIcon>
                 <ListItemText primary={projetos.todos.texto} slotProps={{ primary: { sx: { fontWeight: 500, fontSize: 14 } } }} />
               </ListItemButton>
