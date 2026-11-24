@@ -6,8 +6,12 @@
 //   POST /api/admin/entrar         { email, codigo }  confere e cria a sessão
 //   POST /api/admin/sair                              encerra a sessão
 //
-// Variáveis: ADMIN_EMAILS, LOGIN_DE ("Nome <login@dominio>", domínio verificado no Resend),
-// SITE_NOME (opcional), SESSAO_DIAS (opcional, padrão 7). Segredo: RESEND_API_KEY.
+// Variáveis: ADMIN_EMAILS, LOGIN_DE ("Nome <login@dominio>"), SITE_NOME (opcional),
+// SESSAO_DIAS (opcional, padrão 7).
+// Envio do código: pelo Resend quando houver o segredo RESEND_API_KEY (LOGIN_DE num domínio
+// verificado no Resend). Sem ele, usa o e-mail da Cloudflare (binding EMAIL, o mesmo do
+// formulário de pedido), que só entrega para endereços verificados no Email Routing da conta.
+// A prévia usa esse segundo caminho, para a chave do Resend ficar só no site oficial.
 
 import { COR, FONTE, escaparHtml } from "./email-pedido.js";
 
@@ -126,6 +130,21 @@ Enviado por <a href="${escaparHtml(siteUrl)}" target="_blank" style="color:${COR
   return { assunto, html, text };
 }
 
+// "Nome <email@dominio>" -> { name, email }
+export function separarRemetente(texto) {
+  const m = String(texto || "").match(/^\s*(.*?)\s*<([^<>\s]+@[^<>\s]+)>\s*$/);
+  return m ? { name: m[1] || undefined, email: m[2] } : { email: String(texto || "").trim() };
+}
+
+async function enviarPelaCloudflare(env, para, mensagem) {
+  await env.EMAIL.send({ from: separarRemetente(env.LOGIN_DE), to: para, subject: mensagem.assunto, html: mensagem.html, text: mensagem.text });
+}
+
+async function enviarCodigo(env, para, mensagem) {
+  if (env.RESEND_API_KEY) return enviarPeloResend(env, para, mensagem);
+  return enviarPelaCloudflare(env, para, mensagem);
+}
+
 async function enviarPeloResend(env, para, mensagem) {
   const resp = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -170,8 +189,8 @@ export async function rotaLogin(request, env, url, caminho) {
 
   if (caminho === "/api/admin/entrar/codigo") {
     const modoDev = env.LOGIN_DEV_MOSTRAR_CODIGO && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
-    if (!modoDev && (!env.RESEND_API_KEY || !env.LOGIN_DE)) {
-      console.error("login: RESEND_API_KEY ou LOGIN_DE não configurado");
+    if (!modoDev && (!env.LOGIN_DE || (!env.RESEND_API_KEY && !env.EMAIL))) {
+      console.error("login: configure LOGIN_DE e RESEND_API_KEY (ou o binding EMAIL)");
       return json({ ok: false, erro: "envio-indisponivel" }, 503);
     }
     // E-mail não liberado: mesma resposta, para não revelar quem é administrador.
@@ -196,7 +215,7 @@ export async function rotaLogin(request, env, url, caminho) {
       return json({ ok: true });
     }
     try {
-      await enviarPeloResend(env, email, emailDoCodigo(codigo, { siteNome: env.SITE_NOME || "TGH Services", siteUrl: url.origin }));
+      await enviarCodigo(env, email, emailDoCodigo(codigo, { siteNome: env.SITE_NOME || "TGH Services", siteUrl: url.origin }));
     } catch (e) {
       console.error("login: falha ao enviar o código", e && e.message);
       return json({ ok: false, erro: "falha-no-envio" }, 502);

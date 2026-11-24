@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { limparProjeto, urlSegura } from "../src/projetos.js";
-import { emailDoCodigo, ehDono } from "../src/login.js";
+import { emailDoCodigo, ehDono, separarRemetente } from "../src/login.js";
 
 test("card da vitrine: limpa campos e exige nome", () => {
   assert.equal(limparProjeto("vitrine", { nome: "  " }).erro, "nome");
@@ -44,4 +44,9 @@ test("donos vêm de ADMIN_EMAILS, sem diferenciar maiúsculas", () => {
   assert.equal(ehDono(env, "dono@gmail.com"), true);
   assert.equal(ehDono(env, "  OUTRO@x.com "), true);
   assert.equal(ehDono(env, "alguem@x.com"), false);
+});
+
+test("remetente no formato Nome <email>", () => {
+  assert.deepEqual(separarRemetente("TGH Services <login@tghservices.com.br>"), { name: "TGH Services", email: "login@tghservices.com.br" });
+  assert.deepEqual(separarRemetente("login@x.com"), { email: "login@x.com" });
 });
