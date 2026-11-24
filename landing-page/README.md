@@ -14,6 +14,10 @@ Seções: abertura, vitrine de apps (carrossel de cartões, cada um com carrosse
 | `/curriculo` | Currículo em React (`curriculo.html` + `app/curriculo.jsx`), status 200 |
 | `/curriculo/`, `/curriculo.html`, `/index.html` | Redireciona (301) para a rota principal |
 | `POST /api/pedido` | Recebe o formulário e manda o pedido por e-mail |
+| `/admin` | Painel dos cards de projetos, com tela de login própria (código por e-mail) |
+| `GET /api/projetos` | Cards publicados, em JSON |
+| `/api/admin/*` | API do painel (criar, editar, ocultar, ordenar, apagar, imagens, backup) |
+| `/midia/*` | Imagens enviadas pelo painel (R2) |
 | `/assets/*` | JS, CSS e fontes do build, com cache de 1 ano (os nomes têm hash) |
 | `/img/*`, `/logo-tghservices.png`, `/robots.txt` | Arquivos estáticos |
 | Qualquer outra | Página 404 com `noindex` |
@@ -63,11 +67,18 @@ O Worker manda cada pedido pelo binding `EMAIL` do Cloudflare Email Service. É 
 
 Proteções: só aceita JSON da própria origem, limita tamanho dos campos, tem um campo escondido contra robôs e escapa o HTML. Se o envio falhar, o formulário mostra o e-mail para o visitante mandar por conta própria.
 
-## Incluir um app novo na vitrine
+## Cards de projetos (painel /admin)
 
-1. Salve as capturas em `public/img/` (de preferência `.webp`, até 1600 px de largura). **Mascare dados pessoais antes**: nomes, e-mails, nomes de clientes e de arquivos.
-2. Em `app/site.config.js`, copie um item de `vitrine.apps` e troque nome, descrição, recursos, tecnologias, telas e links.
-3. Só use o status "Código aberto" e o link "Ver código" se o repositório for público.
+Os cards da vitrine ("Apps da TGH") e a lista "Outros projetos" vêm do banco D1 `tghservices-site` e são editados em `/admin`, sem novo deploy. A prévia e o site oficial usam o mesmo banco e o mesmo bucket R2 (`tghservices-site-imagens`, servido em `/midia/*`).
+
+- **Login** (`src/login.js`, `app/admin/Login.jsx`): sem senha. A pessoa digita o e-mail e recebe pelo [Resend](https://resend.com) um código de 6 números, que vale 10 minutos e aceita 5 tentativas. Com o código certo, o Worker cria uma sessão (cookie `HttpOnly`, `SameSite=Strict`, padrão 7 dias em `SESSAO_DIAS`). Códigos e sessões ficam no D1 só como hash. Para um e-mail sem acesso, a tela mostra a mesma mensagem e nada é enviado, assim ninguém descobre quem tem acesso.
+- **Quem entra**: os **donos** ficam em `ADMIN_EMAILS` (hoje `tghservices.psa@gmail.com`). Eles sempre entram e, no menu ⋮ > "Quem pode entrar", liberam ou tiram outros e-mails (até 50). Ao tirar um e-mail, a sessão dele termina na hora. Os donos não podem ser tirados pelo painel, então ninguém tranca o dono para fora.
+- **E-mail do código**: tem a identidade do site (logo, cores do tema). O remetente é `LOGIN_DE`, num domínio verificado no Resend. A chave fica como segredo **só do Worker de produção**: `RESEND_API_KEY`. Sem a chave (caso da prévia), o Worker manda o código pelo binding `EMAIL` da Cloudflare, que só entrega no endereço verificado em `destination_address`. Na prévia, então, só o dono recebe o código, o que basta para testar.
+- **Página**: o Worker põe os cards publicados dentro do HTML de `/`. Se o banco falhar, a página usa `vitrine.apps` e `portfolio.projetos.itens` do `site.config.js`.
+- **Backup**: no painel, menu ⋮ > "Baixar backup" gera um JSON com todos os cards (as imagens continuam no R2). "Restaurar backup" troca tudo pelo arquivo.
+- **Banco novo**: `npx wrangler d1 migrations apply tghservices-site --remote`, depois `node scripts/semente.js > semente.sql` e `npx wrangler d1 execute tghservices-site --remote --file semente.sql` para copiar os cards do `site.config.js`.
+- **Rodar o painel na sua máquina**: `npx wrangler d1 migrations apply tghservices-site --local -c wrangler.preview.jsonc`, crie `.dev.vars` com `LOGIN_DEV_MOSTRAR_CODIGO=1` (o código aparece no terminal em vez de ir por e-mail) ou `ADMIN_DEV_EMAIL=seu@email` (entra direto) e rode `npx wrangler dev -c wrangler.preview.jsonc`. Os dois atalhos só valem em `localhost`.
+- Telas enviadas pelo painel são reduzidas para até 1920 px e convertidas para WebP. **Mascare dados pessoais antes de enviar.** Só use "Código aberto" se o repositório for público.
 
 ## Fazer uma landing page para um cliente
 
@@ -75,4 +86,24 @@ Proteções: só aceita JSON da própria origem, limita tamanho dos campos, tem 
 2. Troque `app/site.config.js`: marca e logo, `tema.corPrincipal`, textos, vitrine, serviços, portfólio e o e-mail de contato. Seções sem conteúdo podem ser tiradas de `app/main.jsx`.
 3. Troque as imagens em `public/img/` e o logo em `public/`. Se não for usar o currículo, apague `curriculo.html`, `app/curriculo*.js*` e a entrada dele no `vite.config.js`.
 4. Em `wrangler.jsonc`, troque o nome do Worker, os domínios, `PEDIDO_PARA`, `PEDIDO_DE` e o `destination_address`. Verifique o e-mail do cliente em Email Routing na conta Cloudflare onde o site vai rodar.
-5. `npm run preview:deploy` para o cliente aprovar, depois `npm run deploy`.
+5. Monte o painel `/admin` na conta Cloudflare do cliente (passo a passo abaixo).
+6. `npm run preview:deploy` para o cliente aprovar, depois `npm run deploy`.
+
+### Painel /admin do cliente
+
+Com o painel, o próprio cliente cria, edita, oculta, reordena e apaga os cards e as telas dele, sem pedir deploy. A Cloudflare entra com o plano gratuito (Workers, D1 e R2). O Resend também tem plano gratuito, de 3.000 e-mails por mês, que sobra para os códigos de login. Faça tudo nas contas do cliente: o site fica com ele depois da entrega.
+
+1. **Banco e imagens**: crie o banco D1 e o bucket R2, cada um com nome próprio do cliente:
+   `npx wrangler d1 create <cliente>-site` e `npx wrangler r2 bucket create <cliente>-site-imagens`.
+   Em `wrangler.jsonc` e `wrangler.preview.jsonc`, troque `database_name`, `database_id` e `bucket_name`.
+2. **Tabelas e cards iniciais**: `npx wrangler d1 migrations apply <cliente>-site --remote` cria as tabelas dos cards e do login. Depois rode `node scripts/semente.js > semente.sql` e `npx wrangler d1 execute <cliente>-site --remote --file semente.sql` para copiar os cards do `site.config.js`.
+3. **Resend**: na conta do cliente em [resend.com](https://resend.com), adicione o domínio dele em Domains e coloque na Cloudflare os registros DNS que o Resend mostrar (hoje um TXT em `resend._domainkey` e os CNAMEs `send` e `rsend`). Deixe todos como "DNS only" (nuvem cinza). Eles não mexem no e-mail que o cliente já usa. Depois crie uma API key com "Sending access" só para esse domínio. Se o cliente já usa uma chave com acesso a esse domínio em outro sistema, ela pode ser reaproveitada: cada sistema usa o próprio remetente.
+4. **Segredo e variáveis do Worker**: `npx wrangler secret put RESEND_API_KEY`, só no Worker de produção. A prévia fica sem a chave e usa o e-mail da Cloudflare (por isso o dono em `ADMIN_EMAILS` precisa ser o mesmo `destination_address`). Nos dois `wrangler*.jsonc`, preencha:
+   - `ADMIN_EMAILS`: e-mail do dono (ou donos, separados por vírgula). Pode ser qualquer e-mail, não precisa ser o da conta Cloudflare.
+   - `LOGIN_DE`: remetente, por exemplo `Loja do Cliente <login@dominio-do-cliente.com.br>`, no domínio verificado no Resend.
+   - `SITE_NOME`: nome que aparece no e-mail do código.
+   - `SESSAO_DIAS`: quantos dias a pessoa fica logada (1 a 30).
+   O logo do e-mail é o `logo-tghservices.png` do site (troque o arquivo pelo logo do cliente, mantendo o nome, ou ajuste `src/login.js`).
+5. **Teste**: abra `/admin` numa janela anônima. Tem que pedir o e-mail, mandar o código só para o e-mail liberado e, depois de entrar, salvar um card que aparece na página. Libere e tire um e-mail de teste em "Quem pode entrar". Baixe um backup pelo menu ⋮ e entregue ao cliente junto com o site.
+
+Para entregar: o painel não tem link na página, então passe ao cliente o endereço `https://<dominio>/admin` e explique que ele entra com o e-mail de dono e pode liberar outras pessoas em "Quem pode entrar".

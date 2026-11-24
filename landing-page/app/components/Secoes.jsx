@@ -20,6 +20,7 @@ import { useAbrirPedido } from "./Pedido.jsx";
 import { CabecalhoSecao } from "./Vitrine.jsx";
 import { botaoTonal } from "./Topo.jsx";
 import { novaGuia } from "../links.js";
+import { projetos as cards } from "../projetos.js";
 
 export function SobMedida() {
   const abrirPedido = useAbrirPedido();
@@ -133,8 +134,8 @@ export function Portfolio() {
               <Typography variant="body2" sx={{ color: "text.secondary" }}>{projetos.texto}</Typography>
             </Box>
             <List disablePadding>
-              {projetos.itens.map((p) => (
-                <Box key={p.url}>
+              {cards.outros.map((p) => (
+                <Box key={p.id || p.url}>
                   <ListItemButton component="a" href={p.url} {...novaGuia(p.url)} sx={{ px: 3, py: 2 }}>
                     <ListItemIcon sx={{ minWidth: 40 }}><Icone nome={p.icone} /></ListItemIcon>
                     <ListItemText primary={p.nome} secondary={p.texto} slotProps={{ primary: { sx: { fontWeight: 500 } } }} />
