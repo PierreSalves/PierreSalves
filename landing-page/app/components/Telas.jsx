@@ -11,10 +11,12 @@ import { Icone } from "../icones.jsx";
 const INTERVALO_MS = 5000;
 
 export default function Telas({ telas, nome, iconeVazio, textoVazio }) {
-  const [atual, setAtual] = useState(0);
+  const [indice, setAtual] = useState(0);
   const [pausado, setPausado] = useState(false);
   const menosMovimento = useMediaQuery("(prefers-reduced-motion: reduce)");
   const total = telas.length;
+  // No /admin a lista muda enquanto se edita: o índice nunca passa do total.
+  const atual = total ? indice % total : 0;
 
   useEffect(() => {
     if (pausado || menosMovimento || total < 2) return undefined;
@@ -42,7 +44,7 @@ export default function Telas({ telas, nome, iconeVazio, textoVazio }) {
       )}
       {telas.map((t, i) => (
         <Box
-          key={t.imagem}
+          key={i}
           component="img"
           src={t.imagem}
           alt={t.legenda}
@@ -93,7 +95,7 @@ export default function Telas({ telas, nome, iconeVazio, textoVazio }) {
           <Box sx={{ position: "absolute", right: 8, bottom: 6, display: "flex" }}>
             {telas.map((t, i) => (
               <Box
-                key={t.imagem}
+                key={i}
                 component="button"
                 type="button"
                 onClick={() => ir(i)}

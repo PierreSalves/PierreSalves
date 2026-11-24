@@ -4,16 +4,22 @@
 // /assets/*         JS, CSS e fontes do build, com cache longo (os nomes têm hash)
 // /img/*, logo, robots.txt: arquivos estáticos
 // POST /api/pedido  formulário de pedido: valida e manda para o e-mail em PEDIDO_PARA
+// /admin            painel dos cards de projetos (React), só com login do Cloudflare Access
+// /api/projetos, /api/admin/*, /midia/*: ver src/projetos.js
 // Qualquer outra rota: 404 com link para a página inicial.
 
 import { htmlPedido } from "./email-pedido.js";
+import { rotaPublica, rotaAdmin, verificarAcesso, projetosDaPagina } from "./projetos.js";
 
 const ROTAS_CURRICULO = new Set(["/curriculo", "/curriculo/", "/curriculo.html"]);
 const ROTAS_INICIO = new Set(["/", "/index.html"]);
+const ROTAS_ADMIN = new Set(["/admin", "/admin/", "/admin.html"]);
 
 // Página inicial e currículo (React): o MUI injeta estilos em <style>, por isso 'unsafe-inline' só em style-src.
 const CSP_INICIO =
   "default-src 'none'; img-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+// Admin: igual, mais blob: para mostrar a imagem escolhida antes de enviar.
+const CSP_ADMIN = CSP_INICIO.replace("img-src 'self'", "img-src 'self' blob:");
 // Página 404: só estilos inline e imagens locais.
 const CSP_SIMPLES =
   "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
@@ -25,6 +31,25 @@ function cabecalhosHtml(origem, csp) {
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   return headers;
+}
+
+const PAGINA_SEM_ACESSO = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Acesso restrito · TGH Services</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#F4FBF8;color:#161D1C;text-align:center}a{color:#006A60;font-weight:600}@media (prefers-color-scheme:dark){body{background:#0E1513;color:#DDE4E1}a{color:#82D5C8}}</style></head><body><main><h1>Acesso restrito</h1><p>Esta área é só para o administrador do site.</p><p><a href="/">Ir para a página inicial</a></p></main></body></html>`;
+
+// Põe os cards do banco dentro do HTML da página inicial, para ela já abrir com eles
+// (sem esperar outra requisição). Se o banco falhar, a página usa os do site.config.js.
+async function comProjetos(resposta, env) {
+  if (!env.DB) return resposta;
+  let dados;
+  try {
+    dados = await projetosDaPagina(env.DB);
+  } catch (e) {
+    console.error("projetos: falha ao ler o banco", e && e.message);
+    return resposta;
+  }
+  const seguro = JSON.stringify(dados).replace(/</g, "\\u003c");
+  return new HTMLRewriter()
+    .on("div#raiz", { element: (el) => el.before(`<script id="projetos-dados" type="application/json">${seguro}</script>`, { html: true }) })
+    .transform(resposta);
 }
 
 const PAGINA_404 = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Página não encontrada · TGH Services</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#F4FBF8;color:#161D1C;text-align:center}a{color:#006A60;font-weight:600}@media (prefers-color-scheme:dark){body{background:#0E1513;color:#DDE4E1}a{color:#82D5C8}}</style></head><body><main><h1>Página não encontrada</h1><p>O endereço que você abriu não existe.</p><p><a href="/">Ir para a página inicial</a></p></main></body></html>`;
@@ -125,6 +150,27 @@ export default {
       return receberPedido(request, env, url);
     }
 
+    const publica = await rotaPublica(request, env, caminho);
+    if (publica) return publica;
+
+    if (caminho.startsWith("/api/admin/")) return rotaAdmin(request, env, url);
+
+    if (ROTAS_ADMIN.has(caminho)) {
+      if (caminho !== "/admin") return Response.redirect(new URL("/admin", url), 301);
+      const email = await verificarAcesso(request, env);
+      if (!email) {
+        const headers = cabecalhosHtml({}, CSP_SIMPLES);
+        headers.set("Cache-Control", "no-store");
+        headers.set("X-Robots-Tag", "noindex");
+        return new Response(semCorpo ? null : PAGINA_SEM_ACESSO, { status: 403, headers });
+      }
+      const admin = await env.ASSETS.fetch(new URL("/admin", url));
+      const headers = cabecalhosHtml(admin.headers, CSP_ADMIN);
+      headers.set("Cache-Control", "no-store");
+      headers.set("X-Robots-Tag", "noindex");
+      return new Response(semCorpo ? null : admin.body, { status: 200, headers });
+    }
+
     if (caminho.startsWith("/assets/")) {
       const resp = await env.ASSETS.fetch(request);
       if (!resp.ok) return resp;
@@ -164,8 +210,12 @@ export default {
       }
       const inicio = await env.ASSETS.fetch(new URL("/", url));
       const headers = cabecalhosHtml(inicio.headers, CSP_INICIO);
-      headers.set("Cache-Control", "public, max-age=300");
-      return new Response(semCorpo ? null : inicio.body, { status: 200, headers });
+      // Sem cache no navegador: um card editado no /admin aparece no próximo carregamento.
+      headers.set("Cache-Control", "no-cache");
+      headers.delete("ETag");
+      headers.delete("Content-Length");
+      if (semCorpo) return new Response(null, { status: 200, headers });
+      return comProjetos(new Response(inicio.body, { status: 200, headers }), env);
     }
 
     const headers = cabecalhosHtml({}, CSP_SIMPLES);

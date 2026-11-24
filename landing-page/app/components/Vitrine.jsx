@@ -16,6 +16,7 @@ import { Icone } from "../icones.jsx";
 import { useAbrirPedido } from "./Pedido.jsx";
 import Telas from "./Telas.jsx";
 import { novaGuia } from "../links.js";
+import { projetos } from "../projetos.js";
 
 export function CabecalhoSecao({ rotulo, titulo, children }) {
   return (
@@ -33,6 +34,7 @@ export function CabecalhoSecao({ rotulo, titulo, children }) {
 const larguraCartao = { flex: { xs: "0 0 88%", md: "0 0 calc((100% - 24px) / 2)", lg: "0 0 calc((100% - 48px) / 3)" }, minWidth: 0, scrollSnapAlign: "start" };
 
 function Status({ app, sx }) {
+  if (!app.status?.texto) return null;
   return (
     <Chip
       size="small"
@@ -43,12 +45,13 @@ function Status({ app, sx }) {
   );
 }
 
-function CartaoApp({ app }) {
+// Também usado no /admin, para mostrar como o card vai ficar enquanto ele é editado.
+export function CartaoApp({ app, sx }) {
   const abrirPedido = useAbrirPedido();
   const { pedidoParecido } = site.vitrine;
   return (
-    <Card component="article" sx={{ ...larguraCartao, bgcolor: "superficie.baixa", display: "flex", flexDirection: "column", boxShadow: 1 }}>
-      <Telas telas={app.telas} nome={app.nome} iconeVazio={app.icone} textoVazio={app.semTelas} />
+    <Card component="article" sx={{ ...larguraCartao, ...sx, bgcolor: "superficie.baixa", display: "flex", flexDirection: "column", boxShadow: 1 }}>
+      <Telas telas={app.telas || []} nome={app.nome} iconeVazio={app.icone} textoVazio={app.semTelas} />
       <Stack spacing={2} useFlexGap sx={{ p: { xs: 2.5, sm: 3 }, flex: 1 }}>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: { xs: "flex-start", sm: "center" } }}>
           <Box sx={{ width: 48, height: 48, borderRadius: 3.5, bgcolor: "container.main", color: "container.contrastText", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
@@ -64,8 +67,8 @@ function CartaoApp({ app }) {
         </Stack>
         <Typography sx={{ color: "text.secondary", lineHeight: 1.55 }}>{app.resumo}</Typography>
         <Stack component="ul" spacing={1.5} sx={{ m: 0, p: 0, listStyle: "none" }}>
-          {app.recursos.map((r) => (
-            <Stack component="li" key={r.titulo} direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+          {(app.recursos || []).map((r, i) => (
+            <Stack component="li" key={i} direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
               <Icone nome={r.icone} sx={{ fontSize: 20, color: "primary.main", flex: "none", mt: 0.25 }} />
               <Box>
                 <Typography sx={{ fontSize: 15, fontWeight: 500 }}>{r.titulo}</Typography>
@@ -75,14 +78,14 @@ function CartaoApp({ app }) {
           ))}
         </Stack>
         <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 1, mt: "auto !important" }}>
-          {app.tecnologias.map((t) => (
-            <Chip key={t} size="small" variant="outlined" label={t} sx={{ color: "text.secondary" }} />
+          {(app.tecnologias || []).map((t, i) => (
+            <Chip key={i} size="small" variant="outlined" label={t} sx={{ color: "text.secondary" }} />
           ))}
         </Stack>
         <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 1, justifyContent: "flex-end" }}>
           <Button onClick={() => abrirPedido(pedidoParecido.tipo, app.nome)}>{pedidoParecido.texto}</Button>
-          {app.links.map((l) => (
-            <Button key={l.url} href={l.url} {...novaGuia(l.url)} variant={l.discreto ? "outlined" : "contained"} startIcon={l.icone ? <Icone nome={l.icone} /> : null}>
+          {(app.links || []).map((l, i) => (
+            <Button key={i} href={l.url} {...novaGuia(l.url)} variant={l.discreto ? "outlined" : "contained"} startIcon={l.icone ? <Icone nome={l.icone} /> : null}>
               {l.texto}
             </Button>
           ))}
@@ -118,8 +121,8 @@ export function Vitrine() {
           ref={faixa}
           sx={{ display: "flex", gap: 3, overflowX: "auto", scrollSnapType: "x mandatory", p: "4px 4px 12px", mx: "-4px", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}
         >
-          {v.apps.map((app) => (
-            <CartaoApp key={app.nome} app={app} />
+          {projetos.vitrine.map((app) => (
+            <CartaoApp key={app.id || app.nome} app={app} />
           ))}
           <Box
             component="button"

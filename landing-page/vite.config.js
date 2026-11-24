@@ -24,7 +24,7 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     chunkSizeWarningLimit: 600,
-    // Duas páginas: a inicial e o currículo (vira dist/curriculo.html, servido em /curriculo).
-    rolldownOptions: { input: { inicio: "index.html", curriculo: "curriculo.html" } },
+    // Três páginas: a inicial, o currículo (dist/curriculo.html, em /curriculo) e o painel (dist/admin.html, em /admin).
+    rolldownOptions: { input: { inicio: "index.html", curriculo: "curriculo.html", admin: "admin.html" } },
   },
 });

@@ -14,6 +14,10 @@ Seções: abertura, vitrine de apps (carrossel de cartões, cada um com carrosse
 | `/curriculo` | Currículo em React (`curriculo.html` + `app/curriculo.jsx`), status 200 |
 | `/curriculo/`, `/curriculo.html`, `/index.html` | Redireciona (301) para a rota principal |
 | `POST /api/pedido` | Recebe o formulário e manda o pedido por e-mail |
+| `/admin` | Painel dos cards de projetos (só com login do Cloudflare Access) |
+| `GET /api/projetos` | Cards publicados, em JSON |
+| `/api/admin/*` | API do painel (criar, editar, ocultar, ordenar, apagar, imagens, backup) |
+| `/midia/*` | Imagens enviadas pelo painel (R2) |
 | `/assets/*` | JS, CSS e fontes do build, com cache de 1 ano (os nomes têm hash) |
 | `/img/*`, `/logo-tghservices.png`, `/robots.txt` | Arquivos estáticos |
 | Qualquer outra | Página 404 com `noindex` |
@@ -63,11 +67,16 @@ O Worker manda cada pedido pelo binding `EMAIL` do Cloudflare Email Service. É 
 
 Proteções: só aceita JSON da própria origem, limita tamanho dos campos, tem um campo escondido contra robôs e escapa o HTML. Se o envio falhar, o formulário mostra o e-mail para o visitante mandar por conta própria.
 
-## Incluir um app novo na vitrine
+## Cards de projetos (painel /admin)
 
-1. Salve as capturas em `public/img/` (de preferência `.webp`, até 1600 px de largura). **Mascare dados pessoais antes**: nomes, e-mails, nomes de clientes e de arquivos.
-2. Em `app/site.config.js`, copie um item de `vitrine.apps` e troque nome, descrição, recursos, tecnologias, telas e links.
-3. Só use o status "Código aberto" e o link "Ver código" se o repositório for público.
+Os cards da vitrine ("Apps da TGH") e a lista "Outros projetos" vêm do banco D1 `tghservices-site` e são editados em `/admin`, sem novo deploy. A prévia e o site oficial usam o mesmo banco e o mesmo bucket R2 (`tghservices-site-imagens`, servido em `/midia/*`).
+
+- **Login**: o Cloudflare Access protege `/admin` e `/api/admin/*` e só libera os e-mails da política (hoje só `tghservices.psa@gmail.com`, com código enviado por e-mail). O Worker confere de novo o token do Access (`ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`) e o e-mail (`ADMIN_EMAILS`); sem essas variáveis ninguém entra.
+- **Página**: o Worker põe os cards publicados dentro do HTML de `/`. Se o banco falhar, a página usa `vitrine.apps` e `portfolio.projetos.itens` do `site.config.js`.
+- **Backup**: no painel, menu ⋮ > "Baixar backup" gera um JSON com todos os cards (as imagens continuam no R2). "Restaurar backup" troca tudo pelo arquivo.
+- **Banco novo**: `npx wrangler d1 migrations apply tghservices-site --remote`, depois `node scripts/semente.js > semente.sql` e `npx wrangler d1 execute tghservices-site --remote --file semente.sql` para copiar os cards do `site.config.js`.
+- **Rodar o painel na sua máquina**: crie `.dev.vars` com `ADMIN_DEV_EMAIL=seu@email` e rode `npx wrangler dev -c wrangler.preview.jsonc` (o atalho só vale em `localhost`).
+- Telas enviadas pelo painel são reduzidas para até 1920 px e convertidas para WebP. **Mascare dados pessoais antes de enviar.** Só use "Código aberto" se o repositório for público.
 
 ## Fazer uma landing page para um cliente
 
