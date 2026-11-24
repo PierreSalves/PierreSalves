@@ -23,8 +23,8 @@
     // Painel /admin: só estes e-mails entram (separados por vírgula). O login é feito
     // pelo Cloudflare Access; o Worker confere o token dele com o domínio e o AUD abaixo.
     "ADMIN_EMAILS": "tghservices.psa@gmail.com",
-    "ACCESS_TEAM_DOMAIN": "",
-    "ACCESS_AUD": ""
+    "ACCESS_TEAM_DOMAIN": "misty-breeze-a691.cloudflareaccess.com",
+    "ACCESS_AUD": "6a2987716564187ede8786548b74335b1a7d6da8f6aa6dbddf65a5be7b1d277d"
   },
   // Cards de projetos (criados e editados no /admin). Prévia e site oficial usam o mesmo banco.
   "d1_databases": [{ "binding": "DB", "database_name": "tghservices-site", "database_id": "c7922938-8f87-4a51-8233-fe162fe8dd0b", "migrations_dir": "migrations" }],
