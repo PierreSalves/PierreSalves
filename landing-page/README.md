@@ -84,4 +84,21 @@ Os cards da vitrine ("Apps da TGH") e a lista "Outros projetos" vêm do banco D1
 2. Troque `app/site.config.js`: marca e logo, `tema.corPrincipal`, textos, vitrine, serviços, portfólio e o e-mail de contato. Seções sem conteúdo podem ser tiradas de `app/main.jsx`.
 3. Troque as imagens em `public/img/` e o logo em `public/`. Se não for usar o currículo, apague `curriculo.html`, `app/curriculo*.js*` e a entrada dele no `vite.config.js`.
 4. Em `wrangler.jsonc`, troque o nome do Worker, os domínios, `PEDIDO_PARA`, `PEDIDO_DE` e o `destination_address`. Verifique o e-mail do cliente em Email Routing na conta Cloudflare onde o site vai rodar.
-5. `npm run preview:deploy` para o cliente aprovar, depois `npm run deploy`.
+5. Monte o painel `/admin` na conta Cloudflare do cliente (passo a passo abaixo).
+6. `npm run preview:deploy` para o cliente aprovar, depois `npm run deploy`.
+
+### Painel /admin do cliente
+
+Com o painel, o próprio cliente cria, edita, oculta, reordena e apaga os cards e as telas dele, sem pedir deploy. Tudo cabe no plano gratuito da Cloudflare (Workers, D1, R2 e Zero Trust Free, até 50 usuários). Faça tudo na conta do cliente: o site fica com ele depois da entrega.
+
+1. **Banco e imagens**: crie o banco D1 e o bucket R2, cada um com nome próprio do cliente:
+   `npx wrangler d1 create <cliente>-site` e `npx wrangler r2 bucket create <cliente>-site-imagens`.
+   Em `wrangler.jsonc` e `wrangler.preview.jsonc`, troque `database_name`, `database_id` e `bucket_name`.
+2. **Tabela e cards iniciais**: `npx wrangler d1 migrations apply <cliente>-site --remote`, depois `node scripts/semente.js > semente.sql` e `npx wrangler d1 execute <cliente>-site --remote --file semente.sql`. A semente copia os cards que estão no `site.config.js`.
+3. **Ativar o Zero Trust**: em [one.dash.cloudflare.com](https://one.dash.cloudflare.com/), escolha o nome da equipe (vira `<equipe>.cloudflareaccess.com`) e o plano Free. Só o dono da conta faz isso, e a Cloudflare pode pedir um cartão, sem cobrança no Free.
+4. **Aplicativo do Access**: em Zero Trust > Access > Applications, crie um "Self-hosted" com os caminhos `/admin` e `/api/admin` do domínio do cliente (e os mesmos no endereço `workers.dev` da prévia). Na política, use "Allow" com "Emails" e só o e-mail de login do cliente. O login padrão (código de uso único enviado por e-mail) funciona com qualquer Gmail, sem configurar nada. O e-mail de login não precisa ser o mesmo da conta Cloudflare.
+5. **Variáveis do Worker**: copie o "Application Audience (AUD) Tag" do aplicativo e preencha nos dois `wrangler*.jsonc`:
+   `ADMIN_EMAILS` (os mesmos e-mails da política, separados por vírgula), `ACCESS_TEAM_DOMAIN` (`<equipe>.cloudflareaccess.com`) e `ACCESS_AUD`. Sem essas três, o painel responde "Acesso restrito" para todo mundo.
+6. **Teste**: abra `/admin` numa janela anônima. Tem que pedir o login, aceitar só o e-mail liberado e, depois de entrar, salvar um card que aparece na página. Baixe um backup pelo menu ⋮ e entregue ao cliente junto com o site.
+
+Para entregar: o painel não tem link na página, então passe ao cliente o endereço `https://<dominio>/admin` e explique que ele entra com o e-mail liberado. Para trocar ou incluir quem pode entrar, mude a política do Access e o `ADMIN_EMAILS`.
