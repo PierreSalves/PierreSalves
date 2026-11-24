@@ -4,12 +4,12 @@
 // /assets/*         JS, CSS e fontes do build, com cache longo (os nomes têm hash)
 // /img/*, logo, robots.txt: arquivos estáticos
 // POST /api/pedido  formulário de pedido: valida e manda para o e-mail em PEDIDO_PARA
-// /admin            painel dos cards de projetos (React), só com login do Cloudflare Access
+// /admin            painel dos cards de projetos (React). A própria página mostra o login (código por e-mail).
 // /api/projetos, /api/admin/*, /midia/*: ver src/projetos.js
 // Qualquer outra rota: 404 com link para a página inicial.
 
 import { htmlPedido } from "./email-pedido.js";
-import { rotaPublica, rotaAdmin, verificarAcesso, projetosDaPagina } from "./projetos.js";
+import { rotaPublica, rotaAdmin, projetosDaPagina } from "./projetos.js";
 
 const ROTAS_CURRICULO = new Set(["/curriculo", "/curriculo/", "/curriculo.html"]);
 const ROTAS_INICIO = new Set(["/", "/index.html"]);
@@ -32,8 +32,6 @@ function cabecalhosHtml(origem, csp) {
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   return headers;
 }
-
-const PAGINA_SEM_ACESSO = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Acesso restrito · TGH Services</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#F4FBF8;color:#161D1C;text-align:center}a{color:#006A60;font-weight:600}@media (prefers-color-scheme:dark){body{background:#0E1513;color:#DDE4E1}a{color:#82D5C8}}</style></head><body><main><h1>Acesso restrito</h1><p>Esta área é só para o administrador do site.</p><p><a href="/">Ir para a página inicial</a></p></main></body></html>`;
 
 // Põe os cards do banco dentro do HTML da página inicial, para ela já abrir com eles
 // (sem esperar outra requisição). Se o banco falhar, a página usa os do site.config.js.
@@ -157,13 +155,7 @@ export default {
 
     if (ROTAS_ADMIN.has(caminho)) {
       if (caminho !== "/admin") return Response.redirect(new URL("/admin", url), 301);
-      const email = await verificarAcesso(request, env);
-      if (!email) {
-        const headers = cabecalhosHtml({}, CSP_SIMPLES);
-        headers.set("Cache-Control", "no-store");
-        headers.set("X-Robots-Tag", "noindex");
-        return new Response(semCorpo ? null : PAGINA_SEM_ACESSO, { status: 403, headers });
-      }
+      // A página em si não tem dados: sem sessão, ela mostra a tela de login.
       const admin = await env.ASSETS.fetch(new URL("/admin", url));
       const headers = cabecalhosHtml(admin.headers, CSP_ADMIN);
       headers.set("Cache-Control", "no-store");

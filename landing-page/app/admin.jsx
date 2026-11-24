@@ -1,5 +1,5 @@
 // Painel /admin: criar, editar, ocultar, reordenar e apagar os cards de projetos.
-// A entrada é protegida pelo Cloudflare Access; os dados ficam no D1 (ver src/projetos.js).
+// Sem sessão, mostra a tela de entrada (código por e-mail, ver src/login.js); os dados ficam no D1 (ver src/projetos.js).
 import { StrictMode, useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@mui/material/styles";
@@ -49,6 +49,9 @@ import { Icone } from "./icones.jsx";
 import { ModoTema } from "./components/ModoTema.jsx";
 import { Editor, novoVitrine, novoOutro } from "./admin/Editor.jsx";
 import { api, mensagemDeErro } from "./admin/api.js";
+import { Login } from "./admin/Login.jsx";
+import { Acessos } from "./admin/Acessos.jsx";
+import ManageAccountsRounded from "@mui/icons-material/ManageAccountsRounded";
 
 const tema = criarTema(site.tema.corPrincipal);
 const SECOES = [
@@ -111,8 +114,9 @@ function LinhaProjeto({ projeto, i, total, aoEditar, aoApagar, aoMover, aoPublic
   );
 }
 
-function Painel() {
-  const [email, setEmail] = useState("");
+function Painel({ eu, aoSair }) {
+  const email = eu.email;
+  const [acessos, setAcessos] = useState(false);
   const [projetos, setProjetos] = useState(null);
   const [falhaInicial, setFalhaInicial] = useState("");
   const [secao, setSecao] = useState("vitrine");
@@ -125,20 +129,23 @@ function Painel() {
   const celular = useMediaQuery((t) => t.breakpoints.down("sm"));
 
   const avisar = useCallback((texto, tipo = "success") => setAviso({ texto, tipo, chave: Date.now() }), []);
-  const erro = useCallback((texto) => avisar(texto, "error"), [avisar]);
+  const erroSimples = useCallback((texto) => avisar(texto, "error"), [avisar]);
+  // Erro de sessão (venceu, ou o acesso foi tirado): volta para a tela de entrada.
+  const tratar = useCallback((e) => (e?.codigo === "sem-acesso" ? aoSair(mensagemDeErro(e)) : erroSimples(mensagemDeErro(e))), [aoSair, erroSimples]);
+  const erro = erroSimples;
 
   const recarregar = useCallback(async () => {
     try {
       setProjetos(await api.listar());
       setFalhaInicial("");
     } catch (e) {
+      if (e.codigo === "sem-acesso") return aoSair(mensagemDeErro(e));
       if (projetos === null) setFalhaInicial(mensagemDeErro(e));
-      else erro(mensagemDeErro(e));
+      else tratar(e);
     }
-  }, [erro, projetos]);
+  }, [erro, projetos, aoSair]);
 
   useEffect(() => {
-    api.eu().then((r) => setEmail(r.email), () => {});
     recarregar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -155,7 +162,7 @@ function Painel() {
     try {
       await api.ordenar(secao, ids);
     } catch (e) {
-      erro(mensagemDeErro(e));
+      tratar(e);
       recarregar();
     }
   }
@@ -166,7 +173,7 @@ function Painel() {
       await api.salvar(projeto.id, { publicado });
       avisar(publicado ? `“${projeto.dados.nome}” aparece no site.` : `“${projeto.dados.nome}” foi ocultado do site.`);
     } catch (e) {
-      erro(mensagemDeErro(e));
+      tratar(e);
       recarregar();
     }
   }
@@ -187,7 +194,7 @@ function Painel() {
       await api.apagar(p.id);
       avisar(`“${p.dados.nome}” foi apagado.`);
     } catch (e) {
-      erro(mensagemDeErro(e));
+      tratar(e);
     }
     recarregar();
   }
@@ -212,7 +219,7 @@ function Painel() {
       const r = await api.importar(backup);
       avisar(`Backup restaurado: ${r.total} projetos.`);
     } catch (e) {
-      erro(mensagemDeErro(e));
+      tratar(e);
     }
     recarregar();
   }
@@ -243,12 +250,19 @@ function Painel() {
                 <ListItemIcon><UploadFileRounded /></ListItemIcon>
                 <ListItemText primary="Restaurar backup" secondary="Troca tudo pelo arquivo" />
               </MenuItem>
+              {eu.dono && <Divider />}
+              {eu.dono && (
+                <MenuItem onClick={() => { setMenu(null); setAcessos(true); }}>
+                  <ListItemIcon><ManageAccountsRounded /></ListItemIcon>
+                  <ListItemText primary="Quem pode entrar" secondary="Liberar ou tirar e-mails" />
+                </MenuItem>
+              )}
               <Divider />
               <MenuItem component="a" href="/" target="_blank" rel="noopener" sx={{ display: { sm: "none" } }}>
                 <ListItemIcon><OpenInNewRounded /></ListItemIcon>
                 <ListItemText primary="Ver site" />
               </MenuItem>
-              <MenuItem component="a" href="/cdn-cgi/access/logout">
+              <MenuItem onClick={async () => { setMenu(null); try { await api.sair(); } catch { /* já saiu */ } aoSair(""); }}>
                 <ListItemIcon><LogoutRounded /></ListItemIcon>
                 <ListItemText primary="Sair" />
               </MenuItem>
@@ -350,6 +364,8 @@ function Painel() {
         </DialogActions>
       </Dialog>
 
+      <Acessos aberto={acessos} aoFechar={() => setAcessos(false)} aoAvisar={avisar} aoErro={erro} aoSairDaSessao={() => aoSair("Sua sessão terminou. Entre de novo.")} />
+
       <Snackbar key={aviso?.chave} open={!!aviso} autoHideDuration={aviso?.tipo === "error" ? 8000 : 4000} onClose={(_, motivo) => motivo !== "clickaway" && setAviso(null)} anchorOrigin={{ vertical: "bottom", horizontal: "center" }} sx={{ bottom: { xs: 88, sm: 24 } }}>
         <Alert severity={aviso?.tipo || "success"} variant="filled" onClose={() => setAviso(null)} sx={{ borderRadius: 2 }}>{aviso?.texto}</Alert>
       </Snackbar>
@@ -357,11 +373,28 @@ function Painel() {
   );
 }
 
+// Decide entre a tela de entrada e o painel, conforme a sessão.
+function Raiz() {
+  const [eu, setEu] = useState(undefined); // undefined = conferindo, null = sem sessão
+  const [aviso, setAviso] = useState("");
+  const conferir = useCallback(() => api.eu().then((r) => setEu({ email: r.email, dono: r.dono }), () => setEu(null)), []);
+  useEffect(() => {
+    conferir();
+  }, [conferir]);
+  const sair = useCallback((texto) => {
+    setAviso(texto || "");
+    setEu(null);
+  }, []);
+  if (eu === undefined) return null;
+  if (eu === null) return <Login aviso={aviso} aoEntrar={() => { setAviso(""); conferir(); }} />;
+  return <Painel eu={eu} aoSair={sair} />;
+}
+
 createRoot(document.getElementById("raiz")).render(
   <StrictMode>
     <ThemeProvider theme={tema}>
       <CssBaseline enableColorScheme />
-      <Painel />
+      <Raiz />
     </ThemeProvider>
   </StrictMode>,
 );

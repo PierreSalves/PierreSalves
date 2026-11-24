@@ -3,8 +3,11 @@
 // Público:
 //   GET  /api/projetos              cards publicados, por seção e ordem
 //   GET  /midia/*                   imagens enviadas pelo admin (R2)
-// Admin (só com login do Cloudflare Access de um e-mail em ADMIN_EMAILS):
-//   GET    /api/admin/eu            e-mail de quem entrou
+// Admin (só com sessão do login do painel, ver src/login.js):
+//   GET    /api/admin/eu            e-mail de quem entrou e se é dono
+//   GET    /api/admin/acessos       donos e e-mails liberados (só donos)
+//   POST   /api/admin/acessos       { email } libera um e-mail (só donos)
+//   DELETE /api/admin/acessos/:email  tira o acesso e encerra as sessões dele (só donos)
 //   GET    /api/admin/projetos      todos os cards, inclusive os ocultos
 //   POST   /api/admin/projetos      cria um card
 //   PUT    /api/admin/projetos/:id  edita um card
@@ -13,6 +16,8 @@
 //   POST   /api/admin/imagens       corpo = bytes da imagem; devolve { url }
 //   GET    /api/admin/exportar      backup em JSON
 //   POST   /api/admin/importar      troca todos os cards pelos do backup
+
+import { sessaoAtual, rotaLogin, ehDono, emailsDonos } from "./login.js";
 
 export const SECOES = ["vitrine", "outros"];
 
@@ -106,60 +111,6 @@ async function limparImagens(env, candidatas) {
   if (apagar.length) await env.IMAGENS.delete(apagar);
 }
 
-// ---------------------------------------------------------------- login (Cloudflare Access)
-
-let chavesEmCache = { dominio: "", ate: 0, chaves: [] };
-
-async function chavesDoAccess(dominio) {
-  if (chavesEmCache.dominio === dominio && chavesEmCache.ate > Date.now()) return chavesEmCache.chaves;
-  const resp = await fetch(`https://${dominio}/cdn-cgi/access/certs`);
-  if (!resp.ok) throw new Error("certs " + resp.status);
-  const { keys } = await resp.json();
-  chavesEmCache = { dominio, ate: Date.now() + 3600_000, chaves: keys };
-  return keys;
-}
-
-const base64url = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
-const emailsAdmin = (env) => String(env.ADMIN_EMAILS || "").toLowerCase().split(",").map((e) => e.trim()).filter(Boolean);
-
-// Confere o token que o Cloudflare Access põe na requisição. Devolve o e-mail ou null.
-// buscarChaves pode ser trocado nos testes.
-export async function verificarAcesso(request, env, buscarChaves = chavesDoAccess) {
-  const url = new URL(request.url);
-  // Só para `wrangler dev` na própria máquina: nunca vale num endereço público.
-  if (env.ADMIN_DEV_EMAIL && (url.hostname === "localhost" || url.hostname === "127.0.0.1")) return env.ADMIN_DEV_EMAIL;
-
-  const dominio = env.ACCESS_TEAM_DOMAIN;
-  const aud = env.ACCESS_AUD;
-  const permitidos = emailsAdmin(env);
-  if (!dominio || !aud || permitidos.length === 0) return null; // sem configuração, ninguém entra
-
-  const token = request.headers.get("Cf-Access-Jwt-Assertion");
-  if (!token) return null;
-  const partes = token.split(".");
-  if (partes.length !== 3) return null;
-  try {
-    const cabecalho = JSON.parse(new TextDecoder().decode(base64url(partes[0])));
-    const corpo = JSON.parse(new TextDecoder().decode(base64url(partes[1])));
-    if (cabecalho.alg !== "RS256") return null;
-    const jwk = (await buscarChaves(dominio)).find((k) => k.kid === cabecalho.kid);
-    if (!jwk) return null;
-    const chave = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
-    const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", chave, base64url(partes[2]), new TextEncoder().encode(partes[0] + "." + partes[1]));
-    if (!ok) return null;
-    const agora = Math.floor(Date.now() / 1000);
-    const auds = Array.isArray(corpo.aud) ? corpo.aud : [corpo.aud];
-    if (!auds.includes(aud)) return null;
-    if (corpo.iss !== `https://${dominio}`) return null;
-    if (typeof corpo.exp !== "number" || corpo.exp < agora) return null;
-    if (typeof corpo.nbf === "number" && corpo.nbf > agora + 60) return null;
-    const email = String(corpo.email || "").toLowerCase();
-    return permitidos.includes(email) ? email : null;
-  } catch {
-    return null;
-  }
-}
-
 // ---------------------------------------------------------------- respostas
 
 function json(dados, status = 200, extra = {}) {
@@ -209,7 +160,9 @@ export async function rotaPublica(request, env, caminho) {
 }
 
 export async function rotaAdmin(request, env, url) {
-  const email = await verificarAcesso(request, env);
+  const login = await rotaLogin(request, env, url, url.pathname.replace(/\/+$/, ""));
+  if (login) return login;
+  const email = await sessaoAtual(request, env);
   if (!email) return json({ ok: false, erro: "sem-acesso" }, 403);
   if (!env.DB) return json({ ok: false, erro: "sem-banco" }, 503);
 
@@ -223,7 +176,38 @@ export async function rotaAdmin(request, env, url) {
   const caminho = url.pathname.replace(/\/+$/, "");
   const db = env.DB;
 
-  if (caminho === "/api/admin/eu" && metodo === "GET") return json({ ok: true, email });
+  if (caminho === "/api/admin/eu" && metodo === "GET") return json({ ok: true, email, dono: ehDono(env, email) });
+
+  if (caminho === "/api/admin/acessos" || caminho.startsWith("/api/admin/acessos/")) {
+    if (!ehDono(env, email)) return json({ ok: false, erro: "so-dono" }, 403);
+    if (caminho === "/api/admin/acessos" && metodo === "GET") {
+      const { results } = await db.prepare("SELECT email, criado_em, criado_por FROM admin_usuarios ORDER BY criado_em").all();
+      return json({ ok: true, donos: emailsDonos(env), emails: results });
+    }
+    if (caminho === "/api/admin/acessos" && metodo === "POST") {
+      const { corpo, erro } = await lerJson(request);
+      if (erro) return erro;
+      const novo = String(corpo?.email || "").trim().toLowerCase();
+      if (!/^[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[^\s@<>()"',;:]{2,}$/.test(novo) || novo.length > 200) return json({ ok: false, erro: "email" }, 400);
+      if (ehDono(env, novo)) return json({ ok: false, erro: "ja-dono" }, 400);
+      const { total } = await db.prepare("SELECT COUNT(*) AS total FROM admin_usuarios").first();
+      if (total >= 50) return json({ ok: false, erro: "limite" }, 400);
+      await db.prepare("INSERT OR IGNORE INTO admin_usuarios (email, criado_em, criado_por) VALUES (?, ?, ?)").bind(novo, Math.floor(Date.now() / 1000), email).run();
+      return json({ ok: true }, 201);
+    }
+    const um = caminho.match(/^\/api\/admin\/acessos\/(.+)$/);
+    if (um && metodo === "DELETE") {
+      const alvo = decodeURIComponent(um[1]).toLowerCase();
+      if (ehDono(env, alvo)) return json({ ok: false, erro: "ja-dono" }, 400);
+      await db.batch([
+        db.prepare("DELETE FROM admin_usuarios WHERE email = ?").bind(alvo),
+        db.prepare("DELETE FROM admin_sessoes WHERE email = ?").bind(alvo),
+        db.prepare("DELETE FROM admin_codigos WHERE email = ?").bind(alvo),
+      ]);
+      return json({ ok: true });
+    }
+    return json({ ok: false, erro: "nao-encontrado" }, 404);
+  }
 
   if (caminho === "/api/admin/projetos") {
     if (metodo === "GET") return json({ ok: true, projetos: await listarProjetos(db, { todos: true }) });

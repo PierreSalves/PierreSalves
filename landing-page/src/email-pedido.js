@@ -6,7 +6,7 @@
 export const SITE_URL = "https://tghservices.com.br";
 export const LOGO_URL = `${SITE_URL}/logo-tghservices.png`;
 
-const COR = {
+export const COR = {
   primaria: "#006a60",
   naPrimaria: "#ffffff",
   tonal: "#cce8e2",
@@ -19,9 +19,9 @@ const COR = {
   contorno: "#bec9c6",
 };
 
-const FONTE = "Roboto,'Segoe UI',Helvetica,Arial,sans-serif";
+export const FONTE = "Roboto,'Segoe UI',Helvetica,Arial,sans-serif";
 
-const escaparHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+export const escaparHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 // Número do WhatsApp em formato de link (wa.me). Sem DDI, assume Brasil (55).
 export function linkWhatsapp(numero) {

@@ -23,11 +23,14 @@
     "PEDIDO_PARA": "tghservices.psa@gmail.com",
     "PEDIDO_DE": "site@tghservices.com.br",
     "PEDIDO_NOME": "Site TGH Services",
-    // Painel /admin: só estes e-mails entram (separados por vírgula). O login é feito
-    // pelo Cloudflare Access; o Worker confere o token dele com o domínio e o AUD abaixo.
+    // Painel /admin: login com código de 6 dígitos enviado pelo Resend.
+    // ADMIN_EMAILS = donos (sempre entram e gerenciam a aba "Acessos", separados por vírgula).
+    // LOGIN_DE = remetente do código, num domínio verificado no Resend.
+    // A chave fica como segredo: npx wrangler secret put RESEND_API_KEY
     "ADMIN_EMAILS": "tghservices.psa@gmail.com",
-    "ACCESS_TEAM_DOMAIN": "misty-breeze-a691.cloudflareaccess.com",
-    "ACCESS_AUD": "6a2987716564187ede8786548b74335b1a7d6da8f6aa6dbddf65a5be7b1d277d"
+    "LOGIN_DE": "TGH Services <login@tghservices.com.br>",
+    "SITE_NOME": "TGH Services",
+    "SESSAO_DIAS": "7"
   },
   // Cards de projetos (criados e editados no /admin). Prévia e site oficial usam o mesmo banco.
   "d1_databases": [{ "binding": "DB", "database_name": "tghservices-site", "database_id": "c7922938-8f87-4a51-8233-fe162fe8dd0b", "migrations_dir": "migrations" }],

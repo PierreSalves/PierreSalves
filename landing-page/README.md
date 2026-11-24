@@ -14,7 +14,7 @@ Seções: abertura, vitrine de apps (carrossel de cartões, cada um com carrosse
 | `/curriculo` | Currículo em React (`curriculo.html` + `app/curriculo.jsx`), status 200 |
 | `/curriculo/`, `/curriculo.html`, `/index.html` | Redireciona (301) para a rota principal |
 | `POST /api/pedido` | Recebe o formulário e manda o pedido por e-mail |
-| `/admin` | Painel dos cards de projetos (só com login do Cloudflare Access) |
+| `/admin` | Painel dos cards de projetos, com tela de login própria (código por e-mail) |
 | `GET /api/projetos` | Cards publicados, em JSON |
 | `/api/admin/*` | API do painel (criar, editar, ocultar, ordenar, apagar, imagens, backup) |
 | `/midia/*` | Imagens enviadas pelo painel (R2) |
@@ -71,11 +71,13 @@ Proteções: só aceita JSON da própria origem, limita tamanho dos campos, tem 
 
 Os cards da vitrine ("Apps da TGH") e a lista "Outros projetos" vêm do banco D1 `tghservices-site` e são editados em `/admin`, sem novo deploy. A prévia e o site oficial usam o mesmo banco e o mesmo bucket R2 (`tghservices-site-imagens`, servido em `/midia/*`).
 
-- **Login**: o Cloudflare Access protege `/admin` e `/api/admin/*` e só libera os e-mails da política (hoje só `tghservices.psa@gmail.com`, com código enviado por e-mail). O Worker confere de novo o token do Access (`ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`) e o e-mail (`ADMIN_EMAILS`); sem essas variáveis ninguém entra.
+- **Login** (`src/login.js`, `app/admin/Login.jsx`): sem senha. A pessoa digita o e-mail e recebe pelo [Resend](https://resend.com) um código de 6 números, que vale 10 minutos e aceita 5 tentativas. Com o código certo, o Worker cria uma sessão (cookie `HttpOnly`, `SameSite=Strict`, padrão 7 dias em `SESSAO_DIAS`). Códigos e sessões ficam no D1 só como hash. Para um e-mail sem acesso, a tela mostra a mesma mensagem e nada é enviado, assim ninguém descobre quem tem acesso.
+- **Quem entra**: os **donos** ficam em `ADMIN_EMAILS` (hoje `tghservices.psa@gmail.com`). Eles sempre entram e, no menu ⋮ > "Quem pode entrar", liberam ou tiram outros e-mails (até 50). Ao tirar um e-mail, a sessão dele termina na hora. Os donos não podem ser tirados pelo painel, então ninguém tranca o dono para fora.
+- **E-mail do código**: tem a identidade do site (logo, cores do tema). O remetente é `LOGIN_DE`, num domínio verificado no Resend. A chave fica como segredo do Worker: `RESEND_API_KEY`.
 - **Página**: o Worker põe os cards publicados dentro do HTML de `/`. Se o banco falhar, a página usa `vitrine.apps` e `portfolio.projetos.itens` do `site.config.js`.
 - **Backup**: no painel, menu ⋮ > "Baixar backup" gera um JSON com todos os cards (as imagens continuam no R2). "Restaurar backup" troca tudo pelo arquivo.
 - **Banco novo**: `npx wrangler d1 migrations apply tghservices-site --remote`, depois `node scripts/semente.js > semente.sql` e `npx wrangler d1 execute tghservices-site --remote --file semente.sql` para copiar os cards do `site.config.js`.
-- **Rodar o painel na sua máquina**: crie `.dev.vars` com `ADMIN_DEV_EMAIL=seu@email` e rode `npx wrangler dev -c wrangler.preview.jsonc` (o atalho só vale em `localhost`).
+- **Rodar o painel na sua máquina**: `npx wrangler d1 migrations apply tghservices-site --local -c wrangler.preview.jsonc`, crie `.dev.vars` com `LOGIN_DEV_MOSTRAR_CODIGO=1` (o código aparece no terminal em vez de ir por e-mail) ou `ADMIN_DEV_EMAIL=seu@email` (entra direto) e rode `npx wrangler dev -c wrangler.preview.jsonc`. Os dois atalhos só valem em `localhost`.
 - Telas enviadas pelo painel são reduzidas para até 1920 px e convertidas para WebP. **Mascare dados pessoais antes de enviar.** Só use "Código aberto" se o repositório for público.
 
 ## Fazer uma landing page para um cliente
@@ -89,16 +91,19 @@ Os cards da vitrine ("Apps da TGH") e a lista "Outros projetos" vêm do banco D1
 
 ### Painel /admin do cliente
 
-Com o painel, o próprio cliente cria, edita, oculta, reordena e apaga os cards e as telas dele, sem pedir deploy. Tudo cabe no plano gratuito da Cloudflare (Workers, D1, R2 e Zero Trust Free, até 50 usuários). Faça tudo na conta do cliente: o site fica com ele depois da entrega.
+Com o painel, o próprio cliente cria, edita, oculta, reordena e apaga os cards e as telas dele, sem pedir deploy. A Cloudflare entra com o plano gratuito (Workers, D1 e R2). O Resend também tem plano gratuito, de 3.000 e-mails por mês, que sobra para os códigos de login. Faça tudo nas contas do cliente: o site fica com ele depois da entrega.
 
 1. **Banco e imagens**: crie o banco D1 e o bucket R2, cada um com nome próprio do cliente:
    `npx wrangler d1 create <cliente>-site` e `npx wrangler r2 bucket create <cliente>-site-imagens`.
    Em `wrangler.jsonc` e `wrangler.preview.jsonc`, troque `database_name`, `database_id` e `bucket_name`.
-2. **Tabela e cards iniciais**: `npx wrangler d1 migrations apply <cliente>-site --remote`, depois `node scripts/semente.js > semente.sql` e `npx wrangler d1 execute <cliente>-site --remote --file semente.sql`. A semente copia os cards que estão no `site.config.js`.
-3. **Ativar o Zero Trust**: em [one.dash.cloudflare.com](https://one.dash.cloudflare.com/), escolha o nome da equipe (vira `<equipe>.cloudflareaccess.com`) e o plano Free. Só o dono da conta faz isso, e a Cloudflare pode pedir um cartão, sem cobrança no Free.
-4. **Aplicativo do Access**: em Zero Trust > Access > Applications, crie um "Self-hosted" com os caminhos `/admin` e `/api/admin` do domínio do cliente (e os mesmos no endereço `workers.dev` da prévia). Na política, use "Allow" com "Emails" e só o e-mail de login do cliente. O login padrão (código de uso único enviado por e-mail) funciona com qualquer Gmail, sem configurar nada. O e-mail de login não precisa ser o mesmo da conta Cloudflare.
-5. **Variáveis do Worker**: copie o "Application Audience (AUD) Tag" do aplicativo e preencha nos dois `wrangler*.jsonc`:
-   `ADMIN_EMAILS` (os mesmos e-mails da política, separados por vírgula), `ACCESS_TEAM_DOMAIN` (`<equipe>.cloudflareaccess.com`) e `ACCESS_AUD`. Sem essas três, o painel responde "Acesso restrito" para todo mundo.
-6. **Teste**: abra `/admin` numa janela anônima. Tem que pedir o login, aceitar só o e-mail liberado e, depois de entrar, salvar um card que aparece na página. Baixe um backup pelo menu ⋮ e entregue ao cliente junto com o site.
+2. **Tabelas e cards iniciais**: `npx wrangler d1 migrations apply <cliente>-site --remote` cria as tabelas dos cards e do login. Depois rode `node scripts/semente.js > semente.sql` e `npx wrangler d1 execute <cliente>-site --remote --file semente.sql` para copiar os cards do `site.config.js`.
+3. **Resend**: na conta do cliente em [resend.com](https://resend.com), adicione o domínio dele em Domains e coloque na Cloudflare os registros DNS que o Resend mostrar (SPF e DKIM, num subdomínio como `send.<dominio>`). Eles não mexem no e-mail que o cliente já usa. Depois crie uma API key com "Sending access" só para esse domínio.
+4. **Segredo e variáveis do Worker**: `npx wrangler secret put RESEND_API_KEY` (rode de novo com `-c wrangler.preview.jsonc` para a prévia). Nos dois `wrangler*.jsonc`, preencha:
+   - `ADMIN_EMAILS`: e-mail do dono (ou donos, separados por vírgula). Pode ser qualquer e-mail, não precisa ser o da conta Cloudflare.
+   - `LOGIN_DE`: remetente, por exemplo `Loja do Cliente <login@dominio-do-cliente.com.br>`, no domínio verificado no Resend.
+   - `SITE_NOME`: nome que aparece no e-mail do código.
+   - `SESSAO_DIAS`: quantos dias a pessoa fica logada (1 a 30).
+   O logo do e-mail é o `logo-tghservices.png` do site (troque o arquivo pelo logo do cliente, mantendo o nome, ou ajuste `src/login.js`).
+5. **Teste**: abra `/admin` numa janela anônima. Tem que pedir o e-mail, mandar o código só para o e-mail liberado e, depois de entrar, salvar um card que aparece na página. Libere e tire um e-mail de teste em "Quem pode entrar". Baixe um backup pelo menu ⋮ e entregue ao cliente junto com o site.
 
-Para entregar: o painel não tem link na página, então passe ao cliente o endereço `https://<dominio>/admin` e explique que ele entra com o e-mail liberado. Para trocar ou incluir quem pode entrar, mude a política do Access e o `ADMIN_EMAILS`.
+Para entregar: o painel não tem link na página, então passe ao cliente o endereço `https://<dominio>/admin` e explique que ele entra com o e-mail de dono e pode liberar outras pessoas em "Quem pode entrar".
