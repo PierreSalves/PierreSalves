@@ -6,6 +6,8 @@
 // POST /api/pedido  formulário de pedido: valida e manda para o e-mail em PEDIDO_PARA
 // Qualquer outra rota: 404 com link para a página inicial.
 
+import { htmlPedido } from "./email-pedido.js";
+
 const ROTAS_CURRICULO = new Set(["/curriculo", "/curriculo/", "/curriculo.html"]);
 const ROTAS_INICIO = new Set(["/", "/index.html"]);
 
@@ -34,7 +36,6 @@ function json(dados, status) {
   });
 }
 
-const escaparHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const umaLinha = (s) => s.replace(/[\r\n]+/g, " ").trim();
 const EMAIL_VALIDO = /^[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[^\s@<>()"',;:]{2,}$/;
 
@@ -60,6 +61,7 @@ export function validarPedido(corpo) {
 
 export function montarEmail(pedido, env) {
   const tipo = pedido.tipo;
+  const subject = `Pedido pelo site: ${tipo} · ${pedido.nome}`;
   const linhas = [
     `Tipo: ${tipo}`,
     `Nome: ${pedido.nome}`,
@@ -67,18 +69,17 @@ export function montarEmail(pedido, env) {
     `WhatsApp: ${pedido.whatsapp || "não informado"}`,
     "",
     pedido.mensagem,
+    "",
+    "—",
+    "Enviado pelo formulário de pedido de tghservices.com.br",
   ];
-  const html =
-    `<h2 style="font-family:sans-serif">${escaparHtml(tipo)}</h2>` +
-    `<p style="font-family:sans-serif"><b>Nome:</b> ${escaparHtml(pedido.nome)}<br><b>E-mail:</b> ${escaparHtml(pedido.email)}<br><b>WhatsApp:</b> ${escaparHtml(pedido.whatsapp || "não informado")}</p>` +
-    `<p style="font-family:sans-serif;white-space:pre-wrap">${escaparHtml(pedido.mensagem)}</p>`;
   return {
     from: { email: env.PEDIDO_DE, name: env.PEDIDO_NOME || "Site" },
     to: env.PEDIDO_PARA,
     replyTo: { email: pedido.email, name: pedido.nome },
-    subject: `Pedido pelo site: ${tipo} · ${pedido.nome}`,
+    subject,
     text: linhas.join("\n"),
-    html,
+    html: htmlPedido(pedido, subject),
   };
 }
 

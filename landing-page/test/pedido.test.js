@@ -60,3 +60,15 @@ test("GET /api/pedido responde 405", async () => {
   const r = await worker.fetch(new Request("https://site.test/api/pedido"), env);
   assert.equal(r.status, 405);
 });
+
+test("e-mail do pedido tem o logo do site, link para o site e botão de WhatsApp", async () => {
+  const { linkWhatsapp, LOGO_URL } = await import("../src/email-pedido.js");
+  const { pedido } = validarPedido({ ...valido, whatsapp: "(51) 99999-0000" });
+  const email = montarEmail(pedido, env);
+  assert.ok(email.html.includes(`src="${LOGO_URL}"`));
+  assert.ok(LOGO_URL.startsWith("https://") && LOGO_URL.endsWith(".png"));
+  assert.ok(email.html.includes('href="https://tghservices.com.br"'));
+  assert.ok(email.html.includes("https://wa.me/5551999990000"));
+  assert.equal(linkWhatsapp("123"), "");
+  assert.match(email.text, /tghservices\.com\.br/);
+});
