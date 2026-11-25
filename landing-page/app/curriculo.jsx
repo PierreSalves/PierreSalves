@@ -19,12 +19,14 @@ import OpenInNewRounded from "@mui/icons-material/OpenInNewRounded";
 import GitHub from "@mui/icons-material/GitHub";
 import LinkedIn from "@mui/icons-material/LinkedIn";
 import "@fontsource-variable/roboto-flex/opsz.css";
-import site from "./site.config.js";
+import { configInicial } from "./config/contexto.jsx";
 import cv from "./curriculo.config.js";
 import { criarTema } from "./tema.js";
 import { ModoTema } from "./components/ModoTema.jsx";
 
-const tema = criarTema(site.tema.corPrincipal);
+// Cores, logo e nome vêm da configuração publicada no /admin (o Worker põe no HTML).
+const site = configInicial();
+const tema = criarTema(site.tema);
 const ICONES = { email: MailRounded, github: GitHub, linkedin: LinkedIn };
 
 const impressao = {

@@ -1,7 +1,7 @@
 // Cards de projetos da página. Vêm do banco (o Worker põe o JSON no HTML, em
 // <script id="projetos-dados">) e são editados em /admin. Sem banco, ou se ele falhar,
-// a página usa as listas do site.config.js (útil também para usar como modelo sem banco).
-import site from "./site.config.js";
+// a página usa os cartões de app/projetosIniciais.js (útil também para usar como modelo sem banco).
+import projetosIniciais from "./projetosIniciais.js";
 
 function lerDoHtml() {
   try {
@@ -15,6 +15,6 @@ function lerDoHtml() {
 const doBanco = lerDoHtml();
 
 export const projetos = {
-  vitrine: Array.isArray(doBanco?.vitrine) ? doBanco.vitrine : site.vitrine.apps,
-  outros: Array.isArray(doBanco?.outros) ? doBanco.outros : site.portfolio.projetos.itens,
+  vitrine: Array.isArray(doBanco?.vitrine) ? doBanco.vitrine : projetosIniciais.vitrine,
+  outros: Array.isArray(doBanco?.outros) ? doBanco.outros : projetosIniciais.outros,
 };

@@ -18,7 +18,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import CloseRounded from "@mui/icons-material/CloseRounded";
 import SendRounded from "@mui/icons-material/SendRounded";
-import site from "../site.config.js";
+import { useSite } from "../config/contexto.jsx";
 
 const PedidoContexto = createContext(() => {});
 export const useAbrirPedido = () => useContext(PedidoContexto);
@@ -26,6 +26,7 @@ export const useAbrirPedido = () => useContext(PedidoContexto);
 const VAZIO = { nome: "", email: "", whatsapp: "", tipo: "", mensagem: "", empresa_site: "" };
 
 export function PedidoProvider({ children }) {
+  const site = useSite();
   const [aberto, setAberto] = useState(false);
   const [dados, setDados] = useState(VAZIO);
   const [estado, setEstado] = useState("editando"); // editando | enviando | enviado | erro
@@ -34,12 +35,12 @@ export function PedidoProvider({ children }) {
   const abrir = useCallback((tipo, referencia) => {
     setDados((d) => ({
       ...d,
-      tipo: tipo || site.tiposDePedido[0].id,
+      tipo: site.tiposDePedido.some((t) => t.id === tipo) ? tipo : site.tiposDePedido[0]?.id || "",
       mensagem: referencia && !d.mensagem ? `Quero algo parecido com o ${referencia}. ` : d.mensagem,
     }));
     setEstado((e) => (e === "enviado" ? "editando" : e));
     setAberto(true);
-  }, []);
+  }, [site.tiposDePedido]);
 
   const muda = (campo) => (ev) => setDados((d) => ({ ...d, [campo]: ev.target.value }));
 
@@ -100,13 +101,13 @@ export function PedidoProvider({ children }) {
                 <TextField label="WhatsApp (opcional)" type="tel" value={dados.whatsapp} onChange={muda("whatsapp")} autoComplete="tel" slotProps={{ htmlInput: { maxLength: 40 } }} />
               </Stack>
               <TextField
-                label="Conte sua ideia"
+                label={site.formulario.campoMensagem || "Mensagem"}
                 value={dados.mensagem}
                 onChange={muda("mensagem")}
                 required
                 multiline
                 minRows={4}
-                helperText="Qual problema o app ou a página deve resolver, quem vai usar e se já existe algo hoje."
+                helperText={site.formulario.ajudaMensagem}
                 slotProps={{ htmlInput: { maxLength: 4000 } }}
               />
               {/* Campo escondido contra robôs: pessoas não veem nem preenchem. */}
@@ -122,7 +123,7 @@ export function PedidoProvider({ children }) {
               />
               {estado === "erro" && (
                 <Alert severity="warning">
-                  {site.formulario.erro} <Link href={mailto}>{site.contato.email}</Link>
+                  {site.formulario.erro} {site.contato.email && <Link href={mailto}>{site.contato.email}</Link>}
                 </Alert>
               )}
             </Stack>

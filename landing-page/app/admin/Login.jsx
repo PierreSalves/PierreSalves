@@ -10,7 +10,9 @@ import Link from "@mui/material/Link";
 import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import LockRounded from "@mui/icons-material/LockRounded";
 import MarkEmailReadRounded from "@mui/icons-material/MarkEmailReadRounded";
-import site from "../site.config.js";
+import { configInicial } from "../config/contexto.jsx";
+
+const site = configInicial();
 import { ModoTema } from "../components/ModoTema.jsx";
 import { api, mensagemDeErro } from "./api.js";
 

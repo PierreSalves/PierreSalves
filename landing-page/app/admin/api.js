@@ -15,7 +15,10 @@ const MENSAGENS = {
   url: "Coloque um link válido (começando com https://).",
   "tipo-de-imagem": "Use uma imagem PNG, JPG, WebP ou AVIF.",
   "grande-demais": "A imagem passou de 4 MB, mesmo depois de reduzida.",
-  "arquivo-invalido": "Esse arquivo não é um backup dos projetos.",
+  "arquivo-invalido": "Esse arquivo não é um backup do site.",
+  "nada-para-publicar": "Não há alterações para publicar.",
+  dados: "Os dados enviados estão incompletos.",
+  "nao-encontrado": "Não encontrei esse item. Recarregue a página.",
   email: "Confira o e-mail digitado.",
   codigo: "O código tem 6 números.",
   "codigo-errado": "Código errado. Confira o último e-mail que chegou.",
@@ -29,7 +32,9 @@ const MENSAGENS = {
   limite: "Chegou ao limite de 50 e-mails liberados.",
   "so-dono": "Só o dono do site pode mudar os acessos.",
 };
-export const mensagemDeErro = (e) => MENSAGENS[e?.codigo] || (e?.codigo?.startsWith("item-invalido") ? "O backup tem um projeto com dados inválidos." : "Algo deu errado. Tente de novo.");
+export const mensagemDeErro = (e) =>
+  MENSAGENS[e?.codigo] ||
+  (e?.codigo?.startsWith("item-invalido") ? "O backup tem um projeto com dados inválidos." : e?.codigo?.startsWith("config-invalida") ? "O backup tem uma configuração inválida." : "Algo deu errado. Tente de novo.");
 
 async function chamar(caminho, { metodo = "GET", corpo, tipo } = {}) {
   let resp;
@@ -74,7 +79,12 @@ export const api = {
   apagar: (id) => chamar(`/api/admin/projetos/${encodeURIComponent(id)}`, { metodo: "DELETE" }),
   ordenar: (secao, ids) => chamar("/api/admin/ordem", { metodo: "PUT", corpo: { secao, ids } }),
   importar: (backup) => chamar("/api/admin/importar", { metodo: "POST", corpo: backup }),
-  enviarImagem: (blob) => chamar("/api/admin/imagens", { metodo: "POST", corpo: blob, tipo: blob.type }).then((d) => d.url),
+  enviarImagem: (blob, pasta) => chamar(`/api/admin/imagens${pasta ? `?pasta=${pasta}` : ""}`, { metodo: "POST", corpo: blob, tipo: blob.type }).then((d) => d.url),
+  config: () => chamar("/api/admin/config"),
+  salvarConfig: (config) => chamar("/api/admin/config", { metodo: "PUT", corpo: { config } }),
+  publicarConfig: () => chamar("/api/admin/config/publicar", { metodo: "POST", corpo: {} }),
+  descartarConfig: () => chamar("/api/admin/config/descartar", { metodo: "POST", corpo: {} }),
+  restaurarConfig: (id) => chamar("/api/admin/config/restaurar", { metodo: "POST", corpo: { id } }),
 };
 
 // Reduz a imagem para no máximo 1920 px de largura e converte para WebP (ou JPG no
