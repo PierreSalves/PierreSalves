@@ -1,8 +1,8 @@
-// Gera o SQL que coloca no banco os cards que hoje estão no app/site.config.js.
+// Gera o SQL que coloca no banco os cards iniciais de app/projetosIniciais.js.
 // Uso: node scripts/semente.js > semente.sql
 //      npx wrangler d1 execute tghservices-site --remote --file semente.sql
 // "INSERT OR IGNORE": rodar de novo não duplica nem desfaz o que foi editado no /admin.
-import site from "../app/site.config.js";
+import projetosIniciais from "../app/projetosIniciais.js";
 import { limparProjeto } from "../src/projetos.js";
 
 const slug = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -16,6 +16,6 @@ const adicionar = (secao, lista) =>
     linhas.push(`INSERT OR IGNORE INTO projetos (id, secao, ordem, publicado, dados) VALUES (${sql(slug(item.nome))}, ${sql(secao)}, ${ordem}, 1, ${sql(JSON.stringify(dados))});`);
   });
 
-adicionar("vitrine", site.vitrine.apps);
-adicionar("outros", site.portfolio.projetos.itens);
+adicionar("vitrine", projetosIniciais.vitrine);
+adicionar("outros", projetosIniciais.outros);
 console.log(linhas.join("\n"));

@@ -1,8 +1,12 @@
-// Todo o conteúdo da página fica aqui. Para fazer a landing page de um cliente,
-// copie este arquivo, troque textos, cor, imagens e links, e rode `npm run build`.
+// Configuração de fábrica da página. O que vale no site é a configuração publicada no
+// painel /admin (guardada no D1). Este arquivo é usado quando o banco ainda está vazio,
+// quando ele falha e como ponto de partida para a landing page de um cliente novo.
+// A forma completa (campos, limites, variações e layouts) está em app/config/esquema.js.
 // Os ícones são nomes da lista em app/icones.jsx.
 
 const site = {
+  versao: 1,
+
   marca: {
     nome: "TGH Services",
     logo: "/logo-tghservices.png",
@@ -12,9 +16,20 @@ const site = {
     logoFundoNoEscuro: "#FFFFFF",
   },
 
-  // Cor principal da página. As outras cores (claro e escuro) saem dela.
-  // O azul do logo não precisa ser a cor da página.
-  tema: { corPrincipal: "#006A60" },
+  // Cores: no modo "auto" as paletas claro e escuro saem da cor principal pelo algoritmo
+  // oficial do Material 3. Secundária e terciária são opcionais (vazias = o algoritmo escolhe).
+  // Em "ajustes" dá para trocar qualquer papel de cor do claro ou do escuro à mão.
+  tema: {
+    corPrincipal: "#006A60",
+    corSecundaria: "",
+    corTerciaria: "",
+    estilo: "tonalSpot",
+    contraste: 0,
+    ajustes: { claro: {}, escuro: {} },
+    modoPadrao: "system",
+    botaoModo: true,
+    cantos: "arredondado",
+  },
 
   seo: {
     titulo: "TGH Services · Apps sob medida de Pierre Alves",
@@ -22,12 +37,8 @@ const site = {
       "Vitrine dos apps da TGH Services e portfólio de Pierre Alves, desenvolvedor full stack. Apps web e mobile e landing pages feitos sob medida.",
   },
 
-  menu: [
-    { texto: "Apps", alvo: "#apps" },
-    { texto: "Sob medida", alvo: "#sob-medida" },
-    { texto: "Serviços", alvo: "#servicos" },
-    { texto: "Portfólio", alvo: "#portfolio" },
-  ],
+  // Botão do canto do cabeçalho.
+  topo: { botao: { mostrar: true, texto: "Fale comigo", icone: "email", tipo: "app" } },
 
   // Tipos de pedido que aparecem no formulário. Cada botão da página abre o formulário
   // já com um deles escolhido.
@@ -38,180 +49,205 @@ const site = {
     { id: "outro", texto: "Outro assunto" },
   ],
 
-  abertura: {
-    chips: [
-      { icone: "site", texto: "Web" },
-      { icone: "celular", texto: "Android e iOS" },
-      { icone: "offline", texto: "Funciona offline" },
-    ],
-    titulo: "Apps que eu criei, e o próximo pode ser",
-    destaque: "o seu",
-    texto:
-      "Sou Pierre Alves, desenvolvedor full stack. Na TGH Services eu publico os apps que já estão no ar e faço apps e landing pages sob medida para o jeito que o seu negócio trabalha.",
-    botaoPrincipal: { texto: "Ver os apps", icone: "apps", alvo: "#apps" },
-    botaoPedido: { texto: "Quero um app sob medida", tipo: "app" },
-    navegador: {
-      endereco: "controlepresenca.tghservices.com.br",
-      imagem: "/img/presenca-painel.webp",
-      largura: 1085,
-      altura: 672,
-      alt: "Painel do Controle de Presença, com dados fictícios",
-    },
-    celular: { imagem: "/img/cine-celular.webp", largura: 585, altura: 996, alt: "CineOnline aberto no celular" },
-  },
-
-  vitrine: {
-    rotulo: "Vitrine",
-    titulo: "Apps da TGH",
-    // Para incluir um app novo, copie um item desta lista. As telas devem ter dados mascarados.
-    apps: [
-      {
-        nome: "Controle de Presença",
-        publico: "Academias de artes marciais",
-        icone: "artesMarciais",
-        status: { texto: "No ar", icone: "ok" },
-        resumo: "A chamada da academia no celular, e os relatórios prontos no fim do mês.",
-        telas: [
-          { imagem: "/img/presenca-painel.webp", legenda: "Painel do professor" },
-          { imagem: "/img/presenca-relatorios.webp", legenda: "Relatórios" },
-          { imagem: "/img/presenca-admin.webp", legenda: "Administração" },
-          { imagem: "/img/presenca-entrada.webp", legenda: "Entrada", posicao: "left center" },
-        ],
-        recursos: [
-          { icone: "offline", titulo: "Presença no tatame, sem internet", texto: "Lança a chamada offline e envia quando o sinal voltar." },
-          { icone: "grafico", titulo: "Relatórios sem somar à mão", texto: "Semanal, mensal, anual e por aluno, para imprimir ou salvar em PDF." },
-          { icone: "medalha", titulo: "Frequência para graduação", texto: "Mostra quem está abaixo do mínimo da turma, a qualquer momento." },
-          { icone: "admin", titulo: "Várias academias, um sistema", texto: "O administrador cadastra academias e professores e importa alunos por planilha." },
-        ],
-        tecnologias: ["Flutter", "Cloudflare Workers", "D1"],
-        links: [{ texto: "Abrir app", url: "https://controlepresenca.tghservices.com.br/", icone: "abrir" }],
-      },
-      {
-        nome: "CineOnline",
-        publico: "Para assistir junto, à distância",
-        icone: "filme",
-        status: { texto: "No ar", icone: "ok" },
-        resumo: "Seus vídeos do Drive, seus amigos, o mesmo minuto. Salas privadas para até 24 pessoas, com chat ao vivo.",
-        telas: [
-          { imagem: "/img/cine-sala.webp", legenda: "Sala com chat ao vivo", posicao: "center" },
-          { imagem: "/img/cine-fila.webp", legenda: "Fila e histórico", posicao: "center top" },
-          { imagem: "/img/cine-admin.webp", legenda: "Painel do administrador", posicao: "center top" },
-          { imagem: "/img/cine-inicio.webp", legenda: "Página inicial", posicao: "center top" },
-        ],
-        recursos: [
-          { icone: "fila", titulo: "Monte a fila", texto: "Escolha vídeos e legendas direto do seu Google Drive." },
-          { icone: "link", titulo: "Mande o link", texto: "Convidados entram pelo link, sem criar conta." },
-          { icone: "play", titulo: "Assistam juntos", texto: "Play e pause valem para todos na sala." },
-          { icone: "painel", titulo: "Painel do administrador ao vivo", texto: "Salas abertas, pessoas conectadas, denúncias e moderação num só lugar." },
-        ],
-        tecnologias: ["PWA", "Google Drive", "Cloudflare"],
-        links: [{ texto: "Abrir app", url: "https://cineminha.tghservices.com.br/", icone: "abrir" }],
-      },
-      {
-        nome: "Lembretes de Aniversários",
-        publico: "App mobile · para não esquecer datas importantes",
-        icone: "bolo",
-        status: { texto: "Código aberto", icone: "codigo" },
-        resumo: "App mobile que organiza aniversários e outras datas e ajuda a mandar a mensagem certa no dia.",
-        telas: [],
-        semTelas: "Capturas em breve",
-        recursos: [
-          { icone: "evento", titulo: "Datas organizadas", texto: "Aniversários e datas importantes num só lugar." },
-          { icone: "chat", titulo: "Mensagens prontas no WhatsApp", texto: "Envia o recado com um toque." },
-          { icone: "drive", titulo: "Seus dados no seu Drive", texto: "Tudo fica guardado no Google Drive do próprio usuário." },
-        ],
-        tecnologias: ["Flutter", "Google Drive"],
-        // Só marque "Código aberto" e ponha "Ver código" se o repositório for público.
-        links: [{ texto: "Ver código", url: "https://github.com/PierreSalves/lembretesaniversarios_v2", icone: "codigo", discreto: true }],
-      },
-    ],
-    // Botão "Quero um parecido" em cada app da vitrine.
-    pedidoParecido: { texto: "Quero um parecido", tipo: "parecido" },
-    cartaoFinal: {
-      titulo: "O próximo app pode ser o seu.",
-      texto: "Conte o problema que você quer resolver e eu monto um app sob medida.",
-      botao: { texto: "Contar a minha ideia", tipo: "app" },
-    },
-  },
-
-  sobMedida: {
-    rotulo: "Sob medida",
-    titulo: "Nenhum desses apps saiu de um modelo pronto. O seu também não vai sair.",
-    texto:
-      "Cada app começa com o problema de alguém: a chamada no papel do professor, o filme que os amigos queriam ver juntos. Eu construo em cima do jeito que você já trabalha.",
-    itens: [
-      { icone: "conversa", titulo: "Seu processo", texto: "Telas e regras pensadas para a sua rotina, não o contrário." },
-      { icone: "paleta", titulo: "Sua marca", texto: "Nome, cores e domínio seus, instalável no celular." },
-      { icone: "offline", titulo: "Sem depender de sinal", texto: "Funciona offline e sincroniza quando a internet volta." },
-      { icone: "suporte", titulo: "O app é seu", texto: "Você recebe o app pronto, com a hospedagem configurada na sua conta. Suporte e novas funções depois da entrega só se você contratar." },
-    ],
-    botao: { texto: "Contar a minha ideia", icone: "ideia", tipo: "app" },
-  },
-
-  servicos: {
-    rotulo: "Serviços",
-    titulo: "O que você pode pedir",
-    texto: "Escolha um ponto de partida. O pedido chega direto no meu e-mail e eu respondo com as próximas etapas.",
-    // `preco` é opcional: sem ele, o cartão mostra só o botão de pedido.
-    planos: [
-      {
-        icone: "celular",
-        nome: "App sob medida",
-        resumo: "Web, Android e iOS, feito em cima da rotina do seu negócio.",
-        itens: ["Levantamento do processo com você", "Funciona offline quando precisa", "Entregue pronto, com a hospedagem configurada na sua conta"],
-        botao: { texto: "Pedir orçamento", tipo: "app" },
-        destaque: true,
-      },
-      {
-        icone: "web",
-        nome: "Landing page",
-        resumo: "Uma página como esta, com a sua marca, para mostrar o que você faz e receber pedidos.",
-        itens: ["Visual Material Design, claro e escuro", "Formulário de pedido que chega no seu e-mail", "Publicada na sua conta da Cloudflare, com seu domínio"],
-        botao: { texto: "Quero uma landing page", tipo: "landing" },
-      },
-    ],
-  },
-
-  portfolio: {
-    rotulo: "Portfólio",
-    titulo: "Quem está por trás dos apps",
-    pessoa: {
-      iniciais: "PA",
-      nome: "Pierre Alves",
-      cargo: "Desenvolvedor full stack · Tupã, SP",
-      bio: "Desenvolvedor web pleno na GSA Soluções desde 2023, trabalhando com PHP, Node.js, Oracle e servidores em nuvem. Bacharel em Sistemas de Informação, especialista em UX e ex-professor universitário.",
-      tags: ["PHP · Laravel", "Node.js", "Flutter", "React", "Oracle", "Cloudflare"],
-      links: [
-        { texto: "Currículo completo", url: "/curriculo", icone: "documento", principal: true },
-        { texto: "LinkedIn", url: "https://www.linkedin.com/in/pierre-alves/" },
-        { texto: "GitHub", url: "https://github.com/PierreSalves" },
-      ],
-    },
-    projetos: {
-      titulo: "Outros projetos",
-      texto: "Projetos de estudo e competições, com código aberto.",
-      itens: [
-        { icone: "explorar", nome: "crudSpots", texto: "Cadastro de pontos turísticos com React e API em ASP.NET Core.", url: "https://github.com/PierreSalves/crudSpots" },
-        { icone: "trofeu", nome: "MedicMatch", texto: "Sistema em Laravel feito para a gincana de tecnologia da Faccat.", url: "https://github.com/PierreSalves/GincanaFaccat-MedicMatch" },
-      ],
-      todos: { texto: "Ver todos os projetos no GitHub", url: "https://github.com/PierreSalves?tab=repositories" },
-    },
-  },
-
-  contato: {
-    titulo: "Tem um processo que ainda vive no papel ou na planilha?",
-    email: "tghservices.psa@gmail.com",
-    botao: { texto: "Fazer um pedido", icone: "enviar", tipo: "app" },
-  },
-
   formulario: {
     titulo: "Fazer um pedido",
     texto: "Conte o que você precisa. O pedido chega direto no meu e-mail.",
+    campoMensagem: "Conte sua ideia",
+    ajudaMensagem: "Qual problema o app ou a página deve resolver, quem vai usar e se já existe algo hoje.",
     sucesso: "Pedido enviado. Vou responder no e-mail que você informou.",
     erro: "Não consegui enviar agora. Você pode mandar o mesmo pedido por e-mail:",
   },
 
+  // E-mail público (aparece no contato e no aviso de erro do formulário).
+  contato: { email: "tghservices.psa@gmail.com" },
+
   rodape: { esquerda: "© 2026 TGH Services · Pierre Alves", direita: "Tupã, SP" },
+
+  // Layout de partida (só informativo: depois de aplicado, vale o que está em `secoes`).
+  layout: "vitrine",
+
+  // Seções na ordem em que aparecem. `tipo` diz qual componente desenha a seção,
+  // `variante` qual desenho dele, `ancora` o #endereço e `menu` se entra no cabeçalho.
+  secoes: [
+    {
+      tipo: "abertura",
+      visivel: true,
+      variante: "dispositivos",
+      ancora: "inicio",
+      menu: { mostrar: false, texto: "Início" },
+      dados: {
+        chips: [
+          { icone: "site", texto: "Web" },
+          { icone: "celular", texto: "Android e iOS" },
+          { icone: "offline", texto: "Funciona offline" },
+        ],
+        titulo: "Apps que eu criei, e o próximo pode ser",
+        destaque: "o seu",
+        texto:
+          "Sou Pierre Alves, desenvolvedor full stack. Na TGH Services eu publico os apps que já estão no ar e faço apps e landing pages sob medida para o jeito que o seu negócio trabalha.",
+        botaoPrincipal: { mostrar: true, texto: "Ver os apps", icone: "apps", alvo: "#apps" },
+        botaoPedido: { mostrar: true, texto: "Quero um app sob medida", tipo: "app" },
+        navegador: {
+          endereco: "controlepresenca.tghservices.com.br",
+          imagem: "/img/presenca-painel.webp",
+          largura: 1085,
+          altura: 672,
+          alt: "Painel do Controle de Presença, com dados fictícios",
+        },
+        celular: { imagem: "/img/cine-celular.webp", largura: 585, altura: 996, alt: "CineOnline aberto no celular" },
+        // Usada na variação "Com uma imagem".
+        imagem: { imagem: "/img/cine-sala.webp", largura: 1568, altura: 741, alt: "Sala do CineOnline com chat ao vivo" },
+      },
+    },
+    {
+      tipo: "vitrine",
+      visivel: true,
+      variante: "carrossel",
+      ancora: "apps",
+      menu: { mostrar: true, texto: "Apps" },
+      // Os cartões em si são os projetos da aba "Projetos > Vitrine" do painel.
+      dados: {
+        rotulo: "Vitrine",
+        titulo: "Apps da TGH",
+        pedidoParecido: { mostrar: true, texto: "Quero um parecido", tipo: "parecido" },
+        cartaoFinal: {
+          mostrar: true,
+          titulo: "O próximo app pode ser o seu.",
+          texto: "Conte o problema que você quer resolver e eu monto um app sob medida.",
+          botao: { texto: "Contar a minha ideia", tipo: "app" },
+        },
+      },
+    },
+    {
+      tipo: "diferenciais",
+      visivel: true,
+      variante: "destaque",
+      ancora: "sob-medida",
+      menu: { mostrar: true, texto: "Sob medida" },
+      dados: {
+        rotulo: "Sob medida",
+        titulo: "Nenhum desses apps saiu de um modelo pronto. O seu também não vai sair.",
+        texto:
+          "Cada app começa com o problema de alguém: a chamada no papel do professor, o filme que os amigos queriam ver juntos. Eu construo em cima do jeito que você já trabalha.",
+        itens: [
+          { icone: "conversa", titulo: "Seu processo", texto: "Telas e regras pensadas para a sua rotina, não o contrário." },
+          { icone: "paleta", titulo: "Sua marca", texto: "Nome, cores e domínio seus, instalável no celular." },
+          { icone: "offline", titulo: "Sem depender de sinal", texto: "Funciona offline e sincroniza quando a internet volta." },
+          { icone: "suporte", titulo: "O app é seu", texto: "Você recebe o app pronto, com a hospedagem configurada na sua conta. Suporte e novas funções depois da entrega só se você contratar." },
+        ],
+        botao: { mostrar: true, texto: "Contar a minha ideia", icone: "ideia", tipo: "app" },
+      },
+    },
+    {
+      tipo: "servicos",
+      visivel: true,
+      variante: "cartoes",
+      ancora: "servicos",
+      menu: { mostrar: true, texto: "Serviços" },
+      dados: {
+        rotulo: "Serviços",
+        titulo: "O que você pode pedir",
+        texto: "Escolha um ponto de partida. O pedido chega direto no meu e-mail e eu respondo com as próximas etapas.",
+        // `preco` é opcional: sem ele, o cartão mostra só o botão de pedido.
+        planos: [
+          {
+            icone: "celular",
+            nome: "App sob medida",
+            resumo: "Web, Android e iOS, feito em cima da rotina do seu negócio.",
+            preco: "",
+            itens: ["Levantamento do processo com você", "Funciona offline quando precisa", "Entregue pronto, com a hospedagem configurada na sua conta"],
+            botao: { texto: "Pedir orçamento", tipo: "app" },
+            destaque: true,
+          },
+          {
+            icone: "web",
+            nome: "Landing page",
+            resumo: "Uma página como esta, com a sua marca, para mostrar o que você faz e receber pedidos.",
+            preco: "",
+            itens: ["Visual Material Design, claro e escuro", "Formulário de pedido que chega no seu e-mail", "Publicada na sua conta da Cloudflare, com seu domínio"],
+            botao: { texto: "Quero uma landing page", tipo: "landing" },
+            destaque: false,
+          },
+        ],
+      },
+    },
+    {
+      tipo: "portfolio",
+      visivel: true,
+      variante: "duasColunas",
+      ancora: "portfolio",
+      menu: { mostrar: true, texto: "Portfólio" },
+      dados: {
+        rotulo: "Portfólio",
+        titulo: "Quem está por trás dos apps",
+        pessoa: {
+          iniciais: "PA",
+          foto: "",
+          nome: "Pierre Alves",
+          cargo: "Desenvolvedor full stack · Tupã, SP",
+          bio: "Desenvolvedor web pleno na GSA Soluções desde 2023, trabalhando com PHP, Node.js, Oracle e servidores em nuvem. Bacharel em Sistemas de Informação, especialista em UX e ex-professor universitário.",
+          tags: ["PHP · Laravel", "Node.js", "Flutter", "React", "Oracle", "Cloudflare"],
+          links: [
+            { texto: "Currículo completo", url: "/curriculo", icone: "documento", principal: true },
+            { texto: "LinkedIn", url: "https://www.linkedin.com/in/pierre-alves/", icone: "", principal: false },
+            { texto: "GitHub", url: "https://github.com/PierreSalves", icone: "", principal: false },
+          ],
+        },
+        // Os itens da lista são os projetos da aba "Projetos > Outros projetos" do painel.
+        projetos: {
+          mostrar: true,
+          titulo: "Outros projetos",
+          texto: "Projetos de estudo e competições, com código aberto.",
+          todos: { texto: "Ver todos os projetos no GitHub", url: "https://github.com/PierreSalves?tab=repositories" },
+        },
+      },
+    },
+    {
+      tipo: "localizacao",
+      visivel: false,
+      variante: "mapaETexto",
+      ancora: "onde-estamos",
+      menu: { mostrar: true, texto: "Onde estamos" },
+      dados: {
+        rotulo: "Onde estamos",
+        titulo: "Venha nos visitar",
+        texto: "",
+        endereco: "",
+        horarios: [],
+        // Link de "Compartilhar > Incorporar um mapa" do Google Maps (mapa ou Street View).
+        mapa: "",
+        // Link normal do Google Maps, para o botão "Como chegar".
+        linkRota: "",
+      },
+    },
+    {
+      tipo: "avaliacoes",
+      visivel: false,
+      variante: "cartoes",
+      ancora: "avaliacoes",
+      menu: { mostrar: true, texto: "Avaliações" },
+      dados: {
+        rotulo: "Avaliações",
+        titulo: "O que dizem no Google",
+        // Place ID do negócio no Google (ver README, "Avaliações do Google").
+        placeId: "",
+        limiteMensal: 900,
+        botaoGoogle: "Ver todas no Google Maps",
+      },
+    },
+    {
+      tipo: "contato",
+      visivel: true,
+      variante: "faixa",
+      ancora: "contato",
+      menu: { mostrar: false, texto: "Contato" },
+      dados: {
+        titulo: "Tem um processo que ainda vive no papel ou na planilha?",
+        mostrarEmail: true,
+        botao: { texto: "Fazer um pedido", icone: "enviar", tipo: "app" },
+      },
+    },
+  ],
 };
 
 export default site;

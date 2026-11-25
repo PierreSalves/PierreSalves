@@ -14,10 +14,13 @@
 //   DELETE /api/admin/projetos/:id  apaga um card (e as imagens que só ele usava)
 //   PUT    /api/admin/ordem         { secao, ids: [...] } muda a ordem
 //   POST   /api/admin/imagens       corpo = bytes da imagem; devolve { url }
-//   GET    /api/admin/exportar      backup em JSON
-//   POST   /api/admin/importar      troca todos os cards pelos do backup
+//   POST   /api/admin/imagens?pasta=site  imagem da configuração da página (logo, abertura, foto)
+//   GET    /api/admin/exportar      backup em JSON (configuração da página + cards)
+//   POST   /api/admin/importar      troca tudo pelo backup (aceita também o backup antigo, só de cards)
+//   /api/admin/config...            configuração da página, ver src/config.js
 
 import { sessaoAtual, rotaLogin, ehDono, emailsDonos } from "./login.js";
+import { rotaConfigAdmin, configParaBackup, linhasRestaurarConfig, FORMATO_BACKUP } from "./config.js";
 
 export const SECOES = ["vitrine", "outros"];
 
@@ -145,7 +148,7 @@ export async function rotaPublica(request, env, caminho) {
   if (caminho.startsWith("/midia/")) {
     if (!env.IMAGENS) return new Response(null, { status: 404 });
     const chave = decodeURIComponent(caminho.slice("/midia/".length));
-    if (!/^projetos\/[A-Za-z0-9-]+\.(webp|png|jpg|avif)$/.test(chave)) return new Response(null, { status: 404 });
+    if (!/^(projetos|site)\/[A-Za-z0-9-]+\.(webp|png|jpg|avif)$/.test(chave)) return new Response(null, { status: 404 });
     const obj = await env.IMAGENS.get(chave);
     if (!obj) return new Response(null, { status: 404 });
     const headers = new Headers();
@@ -207,6 +210,11 @@ export async function rotaAdmin(request, env, url) {
       return json({ ok: true });
     }
     return json({ ok: false, erro: "nao-encontrado" }, 404);
+  }
+
+  if (caminho === "/api/admin/config" || caminho.startsWith("/api/admin/config/")) {
+    const r = await rotaConfigAdmin(request, env, caminho, metodo, email, lerJson);
+    return r || json({ ok: false, erro: "nao-encontrado" }, 404);
   }
 
   if (caminho === "/api/admin/projetos") {
@@ -275,23 +283,26 @@ export async function rotaAdmin(request, env, url) {
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength === 0) return json({ ok: false, erro: "vazio" }, 400);
     if (bytes.byteLength > MAX_IMAGEM) return json({ ok: false, erro: "grande-demais" }, 413);
-    const chave = `projetos/${crypto.randomUUID()}.${ext}`;
+    const pasta = url.searchParams.get("pasta") === "site" ? "site" : "projetos";
+    const chave = `${pasta}/${crypto.randomUUID()}.${ext}`;
     await env.IMAGENS.put(chave, bytes, { httpMetadata: { contentType: tipo } });
     return json({ ok: true, url: `/midia/${chave}` }, 201);
   }
 
   if (caminho === "/api/admin/exportar" && metodo === "GET") {
     const projetos = (await listarProjetos(db, { todos: true })).map(({ id, secao, ordem, publicado, dados }) => ({ id, secao, ordem, publicado, dados }));
+    const config = await configParaBackup(db);
     const data = new Date().toISOString().slice(0, 10);
-    return json({ formato: "tghservices-projetos", versao: 1, exportado_em: new Date().toISOString(), projetos }, 200, {
-      "Content-Disposition": `attachment; filename="projetos-${data}.json"`,
+    return json({ formato: FORMATO_BACKUP, versao: 2, exportado_em: new Date().toISOString(), config, projetos }, 200, {
+      "Content-Disposition": `attachment; filename="site-${data}.json"`,
     });
   }
 
   if (caminho === "/api/admin/importar" && metodo === "POST") {
-    const { corpo, erro } = await lerJson(request, 2_000_000);
+    const { corpo, erro } = await lerJson(request, 3_000_000);
     if (erro) return erro;
-    if (corpo?.formato !== "tghservices-projetos" || !Array.isArray(corpo.projetos)) return json({ ok: false, erro: "arquivo-invalido" }, 400);
+    const novo = corpo?.formato === FORMATO_BACKUP;
+    if ((!novo && corpo?.formato !== "tghservices-projetos") || !Array.isArray(corpo.projetos)) return json({ ok: false, erro: "arquivo-invalido" }, 400);
     const linhas = [];
     for (const p of corpo.projetos.slice(0, 200)) {
       const limpo = limparProjeto(p?.secao, p?.dados);
@@ -299,10 +310,13 @@ export async function rotaAdmin(request, env, url) {
       const id = typeof p.id === "string" && /^[A-Za-z0-9-]{1,64}$/.test(p.id) ? p.id : crypto.randomUUID();
       linhas.push(db.prepare("INSERT INTO projetos (id, secao, ordem, publicado, dados) VALUES (?, ?, ?, ?, ?)").bind(id, p.secao, Number.isInteger(p.ordem) ? p.ordem : linhas.length, p.publicado === false ? 0 : 1, JSON.stringify(limpo.dados)));
     }
+    // Backup novo: a configuração da página volta junto (rascunho e publicado).
+    const config = novo ? linhasRestaurarConfig(db, corpo.config, email) : { linhas: [] };
+    if (config.erro) return json({ ok: false, erro: config.erro }, 400);
     const antigas = (await listarProjetos(db, { todos: true })).flatMap((p) => imagensDe(p.dados));
-    await db.batch([db.prepare("DELETE FROM projetos"), ...linhas]);
+    await db.batch([db.prepare("DELETE FROM projetos"), ...linhas, ...config.linhas]);
     await limparImagens(env, antigas);
-    return json({ ok: true, total: linhas.length });
+    return json({ ok: true, total: linhas.length, config: config.linhas.length > 0 });
   }
 
   return json({ ok: false, erro: "nao-encontrado" }, 404);

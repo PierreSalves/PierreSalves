@@ -11,12 +11,13 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 import AddRounded from "@mui/icons-material/AddRounded";
-import site from "../site.config.js";
 import { Icone } from "../icones.jsx";
 import { useAbrirPedido } from "./Pedido.jsx";
 import Telas from "./Telas.jsx";
 import { novaGuia } from "../links.js";
 import { projetos } from "../projetos.js";
+import { useSite } from "../config/contexto.jsx";
+import { secaoDo } from "../config/esquema.js";
 
 export function CabecalhoSecao({ rotulo, titulo, children }) {
   return (
@@ -48,7 +49,7 @@ function Status({ app, sx }) {
 // Também usado no /admin, para mostrar como o card vai ficar enquanto ele é editado.
 export function CartaoApp({ app, sx }) {
   const abrirPedido = useAbrirPedido();
-  const { pedidoParecido } = site.vitrine;
+  const { pedidoParecido } = secaoDo(useSite(), "vitrine").dados;
   return (
     <Card component="article" sx={{ ...larguraCartao, ...sx, bgcolor: "superficie.baixa", display: "flex", flexDirection: "column", boxShadow: 1 }}>
       <Telas telas={app.telas || []} nome={app.nome} iconeVazio={app.icone} textoVazio={app.semTelas} />
@@ -83,7 +84,7 @@ export function CartaoApp({ app, sx }) {
           ))}
         </Stack>
         <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap", gap: 1, justifyContent: "flex-end" }}>
-          <Button onClick={() => abrirPedido(pedidoParecido.tipo, app.nome)}>{pedidoParecido.texto}</Button>
+          {pedidoParecido.mostrar && pedidoParecido.texto && <Button onClick={() => abrirPedido(pedidoParecido.tipo, app.nome)}>{pedidoParecido.texto}</Button>}
           {(app.links || []).map((l, i) => (
             <Button key={i} href={l.url} {...novaGuia(l.url)} variant={l.discreto ? "outlined" : "contained"} startIcon={l.icone ? <Icone nome={l.icone} /> : null}>
               {l.texto}
@@ -95,68 +96,88 @@ export function CartaoApp({ app, sx }) {
   );
 }
 
-export function Vitrine() {
-  const faixa = useRef(null);
+// Cartão tracejado do fim da vitrine, que abre o formulário de pedido.
+function CartaoFinal({ c, sx }) {
   const abrirPedido = useAbrirPedido();
+  return (
+    <Box
+      component="button"
+      type="button"
+      onClick={() => abrirPedido(c.botao.tipo)}
+      sx={{
+        ...sx,
+        font: "inherit",
+        textAlign: "left",
+        cursor: "pointer",
+        bgcolor: "transparent",
+        color: "text.primary",
+        borderRadius: 7,
+        border: "2px dashed",
+        borderColor: "contorno.main",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        // Centralizado: o cartão estica até a altura dos outros e o texto não some lá embaixo.
+        justifyContent: "center",
+        gap: 1.5,
+        p: 4,
+        minHeight: 360,
+        "&:hover": { bgcolor: "superficie.baixa" },
+      }}
+    >
+      <Box sx={{ width: 56, height: 56, borderRadius: 4, bgcolor: "container.main", color: "container.contrastText", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        <AddRounded />
+      </Box>
+      <Typography component="strong" sx={{ fontSize: 28, lineHeight: 1.2 }}>{c.titulo}</Typography>
+      <Typography sx={{ fontSize: 15, color: "text.secondary" }}>{c.texto}</Typography>
+      <Typography sx={{ color: "primary.main", fontSize: 14, fontWeight: 500 }}>{c.botao.texto}</Typography>
+    </Box>
+  );
+}
+
+export function Vitrine({ secao }) {
+  const faixa = useRef(null);
   const menosMovimento = useMediaQuery("(prefers-reduced-motion: reduce)");
-  const v = site.vitrine;
+  const v = secao.dados;
+  const grade = secao.variante === "grade";
   const rolar = (direcao) => {
     const el = faixa.current;
     if (el) el.scrollBy({ left: direcao * el.clientWidth * 0.5, behavior: menosMovimento ? "auto" : "smooth" });
   };
+  const final = v.cartaoFinal.mostrar && v.cartaoFinal.titulo;
   return (
-    <Box component="section" id="apps" sx={{ pb: 9 }}>
+    <Box component="section" id={secao.ancora} sx={{ pb: 9 }}>
       <Container>
         <CabecalhoSecao rotulo={v.rotulo} titulo={v.titulo}>
-          <Stack direction="row" spacing={1}>
-            <IconButton aria-label="Apps anteriores" onClick={() => rolar(-1)} sx={{ border: 1, borderColor: "contorno.main", color: "text.primary", width: 48, height: 48 }}>
-              <ArrowBackRounded />
-            </IconButton>
-            <IconButton aria-label="Próximos apps" onClick={() => rolar(1)} sx={{ width: 48, height: 48, bgcolor: "primary.main", color: "primary.contrastText", "&:hover": { bgcolor: "primary.main", filter: "brightness(1.08)" } }}>
-              <ArrowForwardRounded />
-            </IconButton>
-          </Stack>
+          {!grade && (
+            <Stack direction="row" spacing={1}>
+              <IconButton aria-label="Anteriores" onClick={() => rolar(-1)} sx={{ border: 1, borderColor: "contorno.main", color: "text.primary", width: 48, height: 48 }}>
+                <ArrowBackRounded />
+              </IconButton>
+              <IconButton aria-label="Próximos" onClick={() => rolar(1)} sx={{ width: 48, height: 48, bgcolor: "primary.main", color: "primary.contrastText", "&:hover": { bgcolor: "primary.main", filter: "brightness(1.08)" } }}>
+                <ArrowForwardRounded />
+              </IconButton>
+            </Stack>
+          )}
         </CabecalhoSecao>
-        <Box
-          ref={faixa}
-          sx={{ display: "flex", gap: 3, overflowX: "auto", scrollSnapType: "x mandatory", p: "4px 4px 12px", mx: "-4px", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}
-        >
-          {projetos.vitrine.map((app) => (
-            <CartaoApp key={app.id || app.nome} app={app} />
-          ))}
-          <Box
-            component="button"
-            type="button"
-            onClick={() => abrirPedido(v.cartaoFinal.botao.tipo)}
-            sx={{
-              ...larguraCartao,
-              font: "inherit",
-              textAlign: "left",
-              cursor: "pointer",
-              bgcolor: "transparent",
-              color: "text.primary",
-              borderRadius: 7,
-              border: "2px dashed",
-              borderColor: "contorno.main",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              // Centralizado: o cartão estica até a altura dos outros e o texto não some lá embaixo.
-              justifyContent: "center",
-              gap: 1.5,
-              p: 4,
-              minHeight: 360,
-              "&:hover": { bgcolor: "superficie.baixa" },
-            }}
-          >
-            <Box sx={{ width: 56, height: 56, borderRadius: 4, bgcolor: "container.main", color: "container.contrastText", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-              <AddRounded />
-            </Box>
-            <Typography component="strong" sx={{ fontSize: 28, lineHeight: 1.2 }}>{v.cartaoFinal.titulo}</Typography>
-            <Typography sx={{ fontSize: 15, color: "text.secondary" }}>{v.cartaoFinal.texto}</Typography>
-            <Typography sx={{ color: "primary.main", fontSize: 14, fontWeight: 500 }}>{v.cartaoFinal.botao.texto}</Typography>
+        {grade ? (
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "minmax(0,1fr)", md: "repeat(2, minmax(0,1fr))", lg: "repeat(3, minmax(0,1fr))" }, gap: 3, alignItems: "stretch" }}>
+            {projetos.vitrine.map((app) => (
+              <CartaoApp key={app.id || app.nome} app={app} sx={{ flex: "none" }} />
+            ))}
+            {final && <CartaoFinal c={v.cartaoFinal} />}
           </Box>
-        </Box>
+        ) : (
+          <Box
+            ref={faixa}
+            sx={{ display: "flex", gap: 3, overflowX: "auto", scrollSnapType: "x mandatory", p: "4px 4px 12px", mx: "-4px", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}
+          >
+            {projetos.vitrine.map((app) => (
+              <CartaoApp key={app.id || app.nome} app={app} />
+            ))}
+            {final && <CartaoFinal c={v.cartaoFinal} sx={larguraCartao} />}
+          </Box>
+        )}
       </Container>
     </Box>
   );

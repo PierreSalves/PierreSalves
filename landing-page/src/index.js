@@ -4,22 +4,34 @@
 // /assets/*         JS, CSS e fontes do build, com cache longo (os nomes têm hash)
 // /img/*, logo, robots.txt: arquivos estáticos
 // POST /api/pedido  formulário de pedido: valida e manda para o e-mail em PEDIDO_PARA
-// /admin            painel dos cards de projetos (React). A própria página mostra o login (código por e-mail).
-// /api/projetos, /api/admin/*, /midia/*: ver src/projetos.js
+// /?previa=1        a página com o rascunho da configuração, para o iframe de prévia do /admin (precisa de sessão)
+// /admin            painel (React): configuração da página e cards. A própria página mostra o login (código por e-mail).
+// GET /api/avaliacoes  avaliações do Google da seção "Avaliações" (ver src/config.js)
+// /api/projetos, /api/admin/*, /midia/*: ver src/projetos.js e src/config.js
 // Qualquer outra rota: 404 com link para a página inicial.
 
 import { htmlPedido } from "./email-pedido.js";
 import { rotaPublica, rotaAdmin, projetosDaPagina } from "./projetos.js";
+import { configDaPagina, rotaAvaliacoes } from "./config.js";
+import { sessaoAtual } from "./login.js";
 
 const ROTAS_CURRICULO = new Set(["/curriculo", "/curriculo/", "/curriculo.html"]);
 const ROTAS_INICIO = new Set(["/", "/index.html"]);
 const ROTAS_ADMIN = new Set(["/admin", "/admin/", "/admin.html"]);
 
 // Página inicial e currículo (React): o MUI injeta estilos em <style>, por isso 'unsafe-inline' só em style-src.
-const CSP_INICIO =
+const CSP_BASE =
   "default-src 'none'; img-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-// Admin: igual, mais blob: para mostrar a imagem escolhida antes de enviar.
-const CSP_ADMIN = CSP_INICIO.replace("img-src 'self'", "img-src 'self' blob:");
+const CSP_CURRICULO = CSP_BASE;
+// Página inicial: também o mapa do Google (seção Localização) e as fotos de quem avaliou (seção Avaliações).
+const CSP_INICIO = CSP_BASE.replace("img-src 'self'", "img-src 'self' https://lh3.googleusercontent.com").replace(
+  "connect-src 'self';",
+  "connect-src 'self'; frame-src https://www.google.com;",
+);
+// Prévia do painel: a mesma página, mas pode abrir dentro do iframe do /admin.
+const CSP_PREVIA = CSP_INICIO.replace("frame-ancestors 'none'", "frame-ancestors 'self'");
+// Admin: blob: para mostrar a imagem escolhida antes de enviar, e o iframe da prévia.
+const CSP_ADMIN = CSP_BASE.replace("img-src 'self'", "img-src 'self' blob:").replace("connect-src 'self';", "connect-src 'self'; frame-src 'self';");
 // Página 404: só estilos inline e imagens locais.
 const CSP_SIMPLES =
   "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
@@ -33,21 +45,33 @@ function cabecalhosHtml(origem, csp) {
   return headers;
 }
 
-// Põe os cards do banco dentro do HTML da página inicial, para ela já abrir com eles
-// (sem esperar outra requisição). Se o banco falhar, a página usa os do site.config.js.
-async function comProjetos(resposta, env) {
+const scriptJson = (id, dados) => `<script id="${id}" type="application/json">${JSON.stringify(dados).replace(/</g, "\\u003c")}</script>`;
+
+// Põe a configuração da página (e, na inicial, os cards) dentro do HTML, para a página já
+// abrir com eles, sem esperar outra requisição. Se o banco falhar, a página usa o
+// padrão do app/site.config.js. Na inicial também troca título, descrição e ícone da aba.
+async function comDados(resposta, env, { projetos = false, rascunho = false, seo = false } = {}) {
   if (!env.DB) return resposta;
-  let dados;
+  let config = null;
+  let cards = null;
   try {
-    dados = await projetosDaPagina(env.DB);
+    [config, cards] = await Promise.all([configDaPagina(env.DB, { rascunho }), projetos ? projetosDaPagina(env.DB) : null]);
   } catch (e) {
-    console.error("projetos: falha ao ler o banco", e && e.message);
+    console.error("pagina: falha ao ler o banco", e && e.message);
     return resposta;
   }
-  const seguro = JSON.stringify(dados).replace(/</g, "\\u003c");
-  return new HTMLRewriter()
-    .on("div#raiz", { element: (el) => el.before(`<script id="projetos-dados" type="application/json">${seguro}</script>`, { html: true }) })
-    .transform(resposta);
+  let antes = "";
+  if (config) antes += scriptJson("site-config", config);
+  if (cards) antes += scriptJson("projetos-dados", cards);
+  let r = new HTMLRewriter();
+  if (antes) r = r.on("div#raiz", { element: (el) => el.before(antes, { html: true }) });
+  if (seo && config) {
+    r = r
+      .on("title", { element: (el) => el.setInnerContent(config.seo.titulo || config.marca.nome) })
+      .on('meta[name="description"]', { element: (el) => el.setAttribute("content", config.seo.descricao) })
+      .on('link[rel="icon"]', { element: (el) => el.setAttribute("href", config.marca.logo) });
+  }
+  return r.transform(resposta);
 }
 
 const PAGINA_404 = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Página não encontrada · TGH Services</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#F4FBF8;color:#161D1C;text-align:center}a{color:#006A60;font-weight:600}@media (prefers-color-scheme:dark){body{background:#0E1513;color:#DDE4E1}a{color:#82D5C8}}</style></head><body><main><h1>Página não encontrada</h1><p>O endereço que você abriu não existe.</p><p><a href="/">Ir para a página inicial</a></p></main></body></html>`;
@@ -153,6 +177,8 @@ export default {
 
     if (caminho.startsWith("/api/admin/")) return rotaAdmin(request, env, url);
 
+    if (caminho === "/api/avaliacoes") return rotaAvaliacoes(request, env, url, sessaoAtual);
+
     if (ROTAS_ADMIN.has(caminho)) {
       if (caminho !== "/admin") return Response.redirect(new URL("/admin", url), 301);
       // A página em si não tem dados: sem sessão, ela mostra a tela de login.
@@ -160,7 +186,9 @@ export default {
       const headers = cabecalhosHtml(admin.headers, CSP_ADMIN);
       headers.set("Cache-Control", "no-store");
       headers.set("X-Robots-Tag", "noindex");
-      return new Response(semCorpo ? null : admin.body, { status: 200, headers });
+      headers.delete("Content-Length");
+      if (semCorpo) return new Response(null, { status: 200, headers });
+      return comDados(new Response(admin.body, { status: 200, headers }), env);
     }
 
     if (caminho.startsWith("/assets/")) {
@@ -191,9 +219,12 @@ export default {
         return Response.redirect(new URL("/curriculo", url), 301);
       }
       const curriculo = await env.ASSETS.fetch(new URL("/curriculo", url));
-      const headers = cabecalhosHtml(curriculo.headers, CSP_INICIO);
-      headers.set("Cache-Control", "public, max-age=300");
-      return new Response(semCorpo ? null : curriculo.body, { status: 200, headers });
+      const headers = cabecalhosHtml(curriculo.headers, CSP_CURRICULO);
+      headers.set("Cache-Control", "no-cache");
+      headers.delete("ETag");
+      headers.delete("Content-Length");
+      if (semCorpo) return new Response(null, { status: 200, headers });
+      return comDados(new Response(curriculo.body, { status: 200, headers }), env);
     }
 
     if (ROTAS_INICIO.has(caminho)) {
@@ -201,13 +232,16 @@ export default {
         return Response.redirect(new URL("/", url), 301);
       }
       const inicio = await env.ASSETS.fetch(new URL("/", url));
-      const headers = cabecalhosHtml(inicio.headers, CSP_INICIO);
-      // Sem cache no navegador: um card editado no /admin aparece no próximo carregamento.
-      headers.set("Cache-Control", "no-cache");
+      // Prévia do painel: rascunho, dentro do iframe do /admin, nunca em cache nem no Google.
+      const previa = url.searchParams.has("previa") && !!(await sessaoAtual(request, env));
+      const headers = cabecalhosHtml(inicio.headers, previa ? CSP_PREVIA : CSP_INICIO);
+      // Sem cache no navegador: o que for publicado no /admin aparece no próximo carregamento.
+      headers.set("Cache-Control", previa ? "no-store" : "no-cache");
+      if (previa) headers.set("X-Robots-Tag", "noindex");
       headers.delete("ETag");
       headers.delete("Content-Length");
       if (semCorpo) return new Response(null, { status: 200, headers });
-      return comProjetos(new Response(inicio.body, { status: 200, headers }), env);
+      return comDados(new Response(inicio.body, { status: 200, headers }), env, { projetos: true, rascunho: previa, seo: true });
     }
 
     const headers = cabecalhosHtml({}, CSP_SIMPLES);
