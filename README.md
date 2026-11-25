@@ -7,7 +7,6 @@
 <p align="center">
   <a href="https://tghservices.com.br/curriculo"><img alt="Currículo" src="https://img.shields.io/badge/Currículo-tghservices.com.br-1f6fbf?style=for-the-badge&logo=googlechrome&logoColor=white"></a>
   <a href="https://www.linkedin.com/in/pierre-alves/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-pierre--alves-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"></a>
-  <a href="mailto:040797pierre@gmail.com"><img alt="E-mail" src="https://img.shields.io/badge/E--mail-040797pierre@gmail.com-0b2545?style=for-the-badge&logo=gmail&logoColor=white"></a>
   <a href="mailto:tghservices.psa@gmail.com"><img alt="E-mail TGH Services" src="https://img.shields.io/badge/E--mail-tghservices.psa@gmail.com-0b2545?style=for-the-badge&logo=gmail&logoColor=white"></a>
 </p>
 
